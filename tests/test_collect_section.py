@@ -236,8 +236,20 @@ def test_auto_ignore_override(pytester, file_creator):
 
 
 def test_collect_section_parse_failure(pytester, file_creator):
-    """Parse collect section from pytest.ini and fail on last line."""
+    """Parse collect section from pytest.ini and fail on last line.
 
+    The first file tried is CONTRIBUTING.md. It does not the globs
+    on the first two lines of the ini file.
+    When the 3rd line is tried the parse error is detected.
+    The plugin generates test file CONTRIBUTING.py which has one
+    test called test_ini_failed which prints an error message to stdout
+    and raises an assertion.
+
+    README.md matches the first glob and collects 2 test cases that pass.
+    The 4 files in the doc folder suffer the same fate as
+    CONTRIBUTING.md and collect test files with the failing test.
+    tests/test_example.py is collected normally with 1 passing test case.
+    """
     pytester.makeini(
         """
         [pytest]
@@ -250,37 +262,17 @@ def test_collect_section_parse_failure(pytester, file_creator):
     )
     file_creator.populate_all(pytester_object=pytester)
     rr = pytester.runpytest("-v")
-    # Note-
-    # fnmatch treats *, [, and ] as special characters for shell wildcards
-    # so the usage details are not checked.
-    #
-    # pytest prints the warning to stdout.
-    # The first phmdoctest-collect line collects README.md and generates
-    # the first two test cases matched below.
-    # The file test_example.py is collected by native pytest independently
-    # of the plugin.
-    #
-    # Note: During development observed 7 calls with an identical message to
-    # warnings.warn(). Only 1 was printed by pytester.
     rr.stdout.fnmatch_lines(
         [
+            "*::CONTRIBUTING.py::test_ini_failed*",
             "*::README.py::README.session_00001_line_24*",
             "*::README.py::test_code_10_output_17*",
+            "*::doc__README.py::test_ini_failed*",
+            "*::doc__directive2.py::test_ini_failed*",
+            "*::doc__nocode.py::test_ini_failed*",
+            "*::doc__project.py::test_ini_failed*",
             "*tests/test_example.py::test_example*",
-            "*UserWarning: pytest-phmdoctest parse error on the following line:*",
-            "*tests/bogus2.md  --bogus-command-line-option",
-            "*usage: CollectSection*",
-            "*Process a line of ini file phmdoctest-collect section.",
-            "*positional arguments:",
-            "*file_glob             Generate test file for matching markdown file.",
-            "*optional arguments:",
-            "*  -h, --help            show this help message and exit",
-            "*  --skip TEXT, -s TEXT",
-            "*  --fail-nocode",
-            "*  --setup TEXT, -u TEXT",
-            "*  --teardown TEXT, -d TEXT",
-            "*  --setup-doctest",
         ],
         consecutive=False,
     )
-    rr.assert_outcomes(passed=3)
+    rr.assert_outcomes(failed=5, passed=3)

@@ -2,13 +2,14 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import re
+import textwrap
+
 from tempfile import TemporaryDirectory
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
-import warnings
 
 import py
 
@@ -110,6 +111,7 @@ def pytest_collect_file(
             kwargs = config._phmdoctest_collect_section.match_glob(collect_path)
             if kwargs is None:
                 return None
+
         # Since no phmdoctest-collect section in the .ini file check if file is
         # automatically ignored.
         elif auto_ignore(config.rootpath, collect_path):
@@ -139,7 +141,10 @@ def pytest_collect_file(
             prefixed = "test_" + generated_name.stem
             outfile_path = savers_dir / generated_name.with_stem(prefixed)
 
-        test_file = phmdoctest.main.testfile(**kwargs)
+        if kwargs.get("ini-error", False):
+            test_file = ini_error_file(kwargs["built_from"], kwargs["ini-error"])
+        else:
+            test_file = phmdoctest.main.testfile(**kwargs)
         with open(outfile_path, "w", encoding="utf-8") as fp:
             fp.write(test_file)
 
@@ -172,6 +177,24 @@ ArgValue = Union[List[str], str, bool]
 
 ArgDict = Dict[str, ArgValue]
 """Arguments parsed from a line in phmdoctest-collect section."""
+
+
+def ini_error_file(built_from, message):
+    """Return string containing test file. Test fails, prints message to stdout."""
+    source = '''\
+    """pytest file built from {}"""
+
+
+    def test_ini_failed():
+        """Show a pytest-phmdoctest pytest ini file error."""
+        error_message = """
+    {}"""
+        print(error_message)
+        assert False, "error in pytest-phmdoctest pytest ini file"
+    '''
+    source1 = textwrap.dedent(source)
+    source2 = source1.format(built_from, message)
+    return source2
 
 
 class NoExitArgParser(ArgumentParser):
@@ -268,7 +291,7 @@ def parse_collect_line(parser: NoExitArgParser, line: str) -> ArgDict:
                 parser.format_help(),
             ]
         )
-        return {"warning": text}
+        return {"ini-error": text}
     return vars(args_namespace)
 
 
@@ -325,7 +348,7 @@ class CollectSection:
         """Check for phmdoctest-collect ini section. If present, process it.
 
         Each line of the ini file section is parsed into a dict and
-        stored in the list self._ini_lines. The key "warning" records
+        stored in the list self._ini_lines. The key "ini-error" records
         an error message should parsing fail.
         """
         self._invoke_path = Path(config.invocation_params.dir)
@@ -352,17 +375,13 @@ class CollectSection:
 
         The plugin detects a bad phmdoctest-collect line at pytest_configure()
         time. It remains silent until the line's file_glob is needed by
-        pytest_collect_file(). The warning text is saved in the
-        ArgDict with key "warning".
-
-        When pytest_collect_file() reads arguments and finds
-        a warning, it issues the warning message and skips
-        collecting the file. pytest prints the warning in stdout.
+        pytest_collect_file(). The error text is saved in the
+        ArgDict with key "ini-error".
         """
         for argdict in self._ini_lines:
-            if argdict.get("warning", False):
-                warnings.warn(argdict["warning"], UserWarning)
-                return None
+            if argdict.get("ini-error", False):
+                return argdict
+
             glob = argdict["file_glob"]
             if collect_path in self._invoke_path.glob(glob):
                 kwargs = argdict.copy()

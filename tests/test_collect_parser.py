@@ -132,11 +132,11 @@ def test_quoted_short_forms():
 
 
 def test_bad_argument():
-    """Ini line parsing error returns {"warning": error_text}."""
+    """Ini line parsing error returns {"ini-error": error_text}."""
     line = "myglob --bogus --skip Floats --setup MyTEXT --setup-doctest"
     parsed = parse_collect_line(parser, line)
     assert len(parsed) == 1
-    assert "warning" in parsed
+    assert "ini-error" in parsed
     expected_lines = [
         "pytest-phmdoctest parse error on the following line:",
         "myglob --bogus --skip Floats --setup MyTEXT --setup-doctest",
@@ -159,7 +159,7 @@ def test_bad_argument():
     ]
     # replace all run of whitespace including newlines with spaces.
     want = re.sub(r"\s+", " ", "\n".join(expected_lines))
-    got = re.sub(r"\s+", " ", parsed["warning"])
+    got = re.sub(r"\s+", " ", parsed["ini-error"])
     got1 = got.rstrip()  # drop final newline
     assert want == got1
 

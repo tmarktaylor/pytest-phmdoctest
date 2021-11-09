@@ -226,9 +226,9 @@ ini file. It is a list of lines of the format
   - Use double quotes as needed in TEXT.
   - The plugin does not support `\"` escaped double quote.
   - Look for list of options in the next section.
-- If a glob with options matches and the options do not parse,
-  the file is not collected and a Python warning is issued. Multiple
-  warnings, one for each matching file, are possible.
+- If a line that does not parse is needed, the plugin collects
+  a special test file that contains a failing test case with
+  an embedded error message.
 
 Example
 ```ini
@@ -312,11 +312,9 @@ option. Specify a target directory for the files.
   to avoid this error from pathlib.py in relative_to():
   ValueError: `<file to be collected>` is not in the subpath of `<working directory>`
 - Note the plugin does not accept single quoted phmdoctest args in the
-  phmdoctest-collect section. A usage error warning will be issued.
+  phmdoctest-collect section. A failing test will be collected.
 - Use underscore in conftest.py for pytest_plugins:
   `pytest_plugins = ["pytest_phmdoctest"]`
-- Only one UserWarning printed by pytest, observed about 7 identical warnings
-  generated.
 - An ImportPathMismatchError indicates two test files have the same name.
 - pytest -vv output shows the path to the plugin temporary directory.
 - The --report option of the phmdoctest command lists all
