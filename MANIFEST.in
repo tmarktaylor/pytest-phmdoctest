@@ -8,10 +8,12 @@ include *.txt
 
 include CONTRIBUTING.md
 include conf.py
+include index.rst
 
 recursive-include doc *.md
 recursive-include doc *.py
 recursive-include doc *.txt
+recursive-include tests *.ini
 recursive-include tests *.md
 recursive-include tests *.py
 recursive-include tests *.txt
