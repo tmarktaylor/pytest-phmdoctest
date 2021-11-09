@@ -1,5 +1,3 @@
-include pyproject.toml
-
 # Include the README and Sphinx master file
 include *.md
 
