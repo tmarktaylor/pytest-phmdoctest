@@ -139,7 +139,8 @@ def pytest_collect_file(
                 savers_dir = config.invocation_params.dir / p
             savers_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
             prefixed = "test_" + generated_name.stem
-            outfile_path = savers_dir / generated_name.with_stem(prefixed)
+            prefixed_path = generated_name.with_name(prefixed + generated_name.suffix)
+            outfile_path = savers_dir / prefixed_path
 
         if kwargs.get("ini-error", False):
             test_file = ini_error_file(kwargs["built_from"], kwargs["ini-error"])
