@@ -103,7 +103,7 @@ jobs:
         flake8 --exit-zero --max-complexity=10
     - name: Deployable
       run: |
-        check-manifest
+        check-manifest -v
         python3 setup.py sdist
         twine check dist/*
 

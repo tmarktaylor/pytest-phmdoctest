@@ -258,7 +258,7 @@ collected 5 items
 ::doc__project.py::doc__project.session_00003_line_55 PASSED
 ::doc__project.py::test_code_12_output_19 PASSED
 ```
-- The glob on the first line the matches the file doc/project.md generating
+- The glob on the first line matches the file doc/project.md generating
   the last 4 items in the output.
 - The glob on the second line matches doc/nocode.md. The file
   does not have any examples. The phmdoctest option --fail-nocode
