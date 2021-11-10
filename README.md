@@ -73,7 +73,7 @@ It generates a pytest test file from a Markdown file.
 [Website](https://tmarktaylor.github.io/pytest-phmdoctest) |
 [Docs](https://pytest-phmdoctest.readthedocs.io/en/latest/) |
 [Repos](https://github.com/tmarktaylor/pytest-phmdoctest) |
-[pytest][2] |
+[pytest](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main) |
 [Codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest?branch=main) |
 [License](https://github.com/tmarktaylor/pytest-phmdoctest/blob/main/LICENSE.txt)
 
@@ -332,6 +332,5 @@ option. Specify a target directory for the files.
 - pytest-codeblocks
 
 [1]: https://docs.python.org/3/library/doctest.html
-[2]: https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest
 [3]: https://tmarktaylor.github.io/phmdoctest
 [4]: https://docs.pytest.org/en/stable
