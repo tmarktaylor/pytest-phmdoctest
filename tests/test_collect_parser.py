@@ -132,36 +132,52 @@ def test_quoted_short_forms():
 
 
 def test_bad_argument():
-    """Ini line parsing error returns {"ini-error": error_text}."""
+    """Ini line parsing error returns {"ini-error": error_text}.
+
+    Caution- This test depends somewhat on formatting done by
+    argparse.ArgumentParser which may change in future Python versions.
+    The tests below collapse runs of whitespace to 1 space to
+    prevent failing on whitespace differences.
+    """
     line = "myglob --bogus --skip Floats --setup MyTEXT --setup-doctest"
     parsed = parse_collect_line(parser, line)
-    assert len(parsed) == 1
+    assert len(parsed) == 1  # 1 item in the dict
     assert "ini-error" in parsed
-    expected_lines = [
+    expected_lines1 = [
         "pytest-phmdoctest parse error on the following line:",
         "myglob --bogus --skip Floats --setup MyTEXT --setup-doctest",
         "usage: CollectSection [-h] [--skip TEXT] [--fail-nocode] [--setup TEXT]",
         "                      [--teardown TEXT] [--setup-doctest]",
         "                      file_glob",
-        "",
+    ]
+    expected_lines2 = [
         "Process a line of ini file phmdoctest-collect section.",
-        "",
-        "positional arguments:",
+    ]
+    expected_lines3 = [
+        # "positional arguments:",
         "  file_glob             Generate test file for matching markdown file.",
-        "",
-        "optional arguments:",
-        "  -h, --help            show this help message and exit",
+    ]
+    expected_lines4 = [
+        # "optional arguments:",
+        # "  -h, --help            show this help message and exit",
         "  --skip TEXT, -s TEXT",
         "  --fail-nocode",
         "  --setup TEXT, -u TEXT",
         "  --teardown TEXT, -d TEXT",
         "  --setup-doctest",
     ]
-    # replace all run of whitespace including newlines with spaces.
-    want = re.sub(r"\s+", " ", "\n".join(expected_lines))
+    # Replace all run of whitespace including newlines with spaces.
     got = re.sub(r"\s+", " ", parsed["ini-error"])
-    got1 = got.rstrip()  # drop final newline
-    assert want == got1
+    # Check that text from the four groups of lines is present
+    # somewhere in the "ini-error" value.
+    want1 = re.sub(r"\s+", " ", "\n".join(expected_lines1))
+    want2 = re.sub(r"\s+", " ", "\n".join(expected_lines2))
+    want3 = re.sub(r"\s+", " ", "\n".join(expected_lines3))
+    want4 = re.sub(r"\s+", " ", "\n".join(expected_lines4))
+    assert want1 in got
+    assert want2 in got
+    assert want3 in got
+    assert want4 in got
 
 
 def show_args(line: str) -> None:
