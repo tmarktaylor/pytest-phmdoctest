@@ -188,12 +188,14 @@ def ini_error_file(built_from, message):
     def test_ini_failed():
         """Show a pytest-phmdoctest pytest ini file error."""
         error_message = """
+    When checking if {} should be collected, an ini
+    file parse error was discovered.
     {}"""
         print(error_message)
         assert False, "error in pytest-phmdoctest pytest ini file"
     '''
     source1 = textwrap.dedent(source)
-    source2 = source1.format(built_from, message)
+    source2 = source1.format(built_from, built_from, message)
     return source2
 
 
