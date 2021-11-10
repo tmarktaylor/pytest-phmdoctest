@@ -61,4 +61,4 @@ ValueError:
 True
 ```
 
-[1]: https://raw.githubusercontent.com/tmarktaylor/phmdoctest/master/project.md
+[1]: https://raw.githubusercontent.com/tmarktaylor/pytest-phmdoctest/main/tests/sample/doc/project.md
