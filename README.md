@@ -66,15 +66,15 @@ It generates a pytest test file from a Markdown file.
 
 [![Usage Test](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/install.yml/badge.svg)](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/install.yml)
 [![CI Test](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/ci.yml/badge.svg)](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/ci.yml)
-[![Build status](https://ci.appveyor.com/api/projects/status/5pp3swc1q1fgbcd6/branch/main?svg=true)](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main)
+[![Build status](https://ci.appveyor.com/api/projects/status/fa0frmueq4h94v23/branch/main?svg=true)](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main)
 [![readthedocs](https://readthedocs.org/projects/pytest-phmdoctest/badge/?version=latest)](https://pytest-phmdoctest.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/coverage.svg?branch=main)](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest?branch=main)
+[![codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main/graph/badge.svg?token=j5uu3WJn6u)](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main)
 
 [Website](https://tmarktaylor.github.io/pytest-phmdoctest) |
 [Docs](https://pytest-phmdoctest.readthedocs.io/en/latest/) |
 [Repos](https://github.com/tmarktaylor/pytest-phmdoctest) |
-[pytest][2] |
-[Codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest?branch=main) |
+[pytest](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main) |
+[Codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main) |
 [License](https://github.com/tmarktaylor/pytest-phmdoctest/blob/main/LICENSE.txt)
 
 
@@ -332,6 +332,5 @@ option. Specify a target directory for the files.
 - pytest-codeblocks
 
 [1]: https://docs.python.org/3/library/doctest.html
-[2]: https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest
 [3]: https://tmarktaylor.github.io/phmdoctest
 [4]: https://docs.pytest.org/en/stable
