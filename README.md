@@ -1,4 +1,4 @@
-# pytest-phmdoctest 0.0.2
+# pytest-phmdoctest 0.0.3
 
 ## Introduction
 
@@ -32,7 +32,7 @@ pytest -v --phmdoctest README.md
 ```
 pytest console output ...
 ```
-plugins: phmdoctest-0.0.2
+plugins: phmdoctest-0.0.3
 collected 2 items
 
 ::README.py::README.session_00001_line_24 PASSED
@@ -120,7 +120,7 @@ pytest -v
 
 <!--phmdoctest-label plugin-inactive-output-->
 ```text
-plugins: phmdoctest-0.0.2
+plugins: phmdoctest-0.0.3
 collected 1 item
 
 tests/test_example.py::test_example PASSED
@@ -135,7 +135,7 @@ pytest --phmdoctest -v
 
 <!--phmdoctest-label plugin-enabled-output-->
 ```text
-plugins: phmdoctest-0.0.2
+plugins: phmdoctest-0.0.3
 collected 11 items
 
 ::README.py::README.session_00001_line_24 PASSED
@@ -249,7 +249,7 @@ pytest -v --ignore tests/test_example.py
 output
 <!--phmdoctest-label collect-section-output-->
 ```text
-plugins: phmdoctest-0.0.2
+plugins: phmdoctest-0.0.3
 collected 5 items
 
 ::doc__nocode.py::test_nothing_fails FAILED
