@@ -180,7 +180,7 @@ ArgDict = Dict[str, ArgValue]
 """Arguments parsed from a line in phmdoctest-collect section."""
 
 
-def ini_error_file(built_from, message):
+def ini_error_file(built_from: str, message: str) -> str:
     """Return string containing test file. Test fails, prints message to stdout."""
     source = '''\
     """pytest file built from {}"""
