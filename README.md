@@ -68,13 +68,13 @@ It generates a pytest test file from a Markdown file.
 [![CI Test](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/ci.yml/badge.svg)](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/ci.yml)
 [![Build status](https://ci.appveyor.com/api/projects/status/fa0frmueq4h94v23/branch/main?svg=true)](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main)
 [![readthedocs](https://readthedocs.org/projects/pytest-phmdoctest/badge/?version=latest)](https://pytest-phmdoctest.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main/graph/badge.svg?token=j5uu3WJn6u)](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest)
+[![codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main/graph/badge.svg?token=j5uu3WJn6u)](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main)
 
 [Website](https://tmarktaylor.github.io/pytest-phmdoctest) |
 [Docs](https://pytest-phmdoctest.readthedocs.io/en/latest/) |
 [Repos](https://github.com/tmarktaylor/pytest-phmdoctest) |
 [pytest](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main) |
-[Codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest?branch=main) |
+[Codecov](https://codecov.io/gh/tmarktaylor/pytest-phmdoctest/branch/main) |
 [License](https://github.com/tmarktaylor/pytest-phmdoctest/blob/main/LICENSE.txt)
 
 
