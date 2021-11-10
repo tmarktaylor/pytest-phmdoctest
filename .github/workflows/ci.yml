@@ -69,7 +69,7 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}/src
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
-      if: success() && ((github.ref == 'refs/heads/master') || (github.ref == 'refs/heads/develop'))
+      if: success() && ((github.ref == 'refs/heads/main') || (github.ref == 'refs/heads/develop'))
       continue-on-error: true
       with:
         file: coverage.xml
