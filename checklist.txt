@@ -18,7 +18,7 @@ Checklist
 - Build the Sphinx html documents and check/update doc/requirements.txt)
 - Release on GitHub
   - tag= v0.0.0
-  - release= pytest-phmdoctest 0.0.0 (description just below tag)
+  - release= pytest-phmdoctest 0.0.0 (description just below tag, press the +)
   - description= Version 0.0.0 uploaded to Python Package Index.
 - upload to PYPI
   - Download zip from github to scratch directory
