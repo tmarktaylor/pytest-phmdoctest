@@ -142,7 +142,7 @@ def pytest_collect_file(
             prefixed_path = generated_name.with_name(prefixed + generated_name.suffix)
             outfile_path = savers_dir / prefixed_path
 
-        if kwargs.get("ini-error", False):
+        if "ini-error" in kwargs:
             test_file = ini_error_file(kwargs["built_from"], kwargs["ini-error"])
         else:
             test_file = phmdoctest.main.testfile(**kwargs)
@@ -382,7 +382,7 @@ class CollectSection:
         ArgDict with key "ini-error".
         """
         for argdict in self._ini_lines:
-            if argdict.get("ini-error", False):
+            if "ini-error" in argdict:
                 return argdict
 
             glob = argdict["file_glob"]
