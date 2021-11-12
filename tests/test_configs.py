@@ -2,7 +2,6 @@
 import configparser
 from pathlib import Path
 
-import trove_classifiers
 import yaml
 
 
@@ -33,27 +32,6 @@ def file_dependencies(filename: str) -> set:
     """Extract set of dependencies from a requirements.txt file."""
     text = Path(filename).read_text(encoding="utf-8")
     return string_to_dependencies(text)
-
-
-def test_trove_classifiers():
-    """Check the trove classifiers in setup.cfg."""
-    config = configparser.ConfigParser()
-    config.read("setup.cfg", encoding="utf-8")
-    text = config.get("metadata", "classifiers")
-    lines = text.splitlines()
-    # remove comments and blank lines
-    lines1 = [line for line in lines if not line.startswith("#")]
-    lines2 = [line1 for line1 in lines1 if not line1 == ""]
-    # No dupicates.
-    items = set(lines2)
-    assert len(items) == len(lines2)
-    for trove_line in lines2:
-        assert (
-            trove_line in trove_classifiers.classifiers
-        ), "Unknown classifier, check spelling."
-        assert (
-            trove_line not in trove_classifiers.deprecated_classifiers
-        ), "Classifier is deprecated."
 
 
 def test_install_requires():

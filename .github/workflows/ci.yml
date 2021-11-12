@@ -89,6 +89,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r tests/requirements_inspect.txt
+        python -m pip install trove-classifiers
         pip freeze
     - name: Formating
       # Show reformatting changes.
@@ -104,8 +105,9 @@ jobs:
     - name: Deployable
       run: |
         check-manifest -v
-        python3 setup.py sdist
+        python setup.py sdist
         twine check dist/*
+        python tests/check_classifiers.py
 
   docs:
     runs-on: ubuntu-latest
