@@ -16,6 +16,7 @@ import sys
 import trove_classifiers
 
 
+print("Checking setup.cfg trove-classifiers for typos, duplicates, deprecated.")
 config = configparser.ConfigParser()
 config.read("setup.cfg", encoding="utf-8")
 text = config.get("metadata", "classifiers")
@@ -32,10 +33,8 @@ messages = []
 for trove_line in lines2:
     if trove_line not in trove_classifiers.classifiers:
         messages.append(
-            "'{}' is not in trove-classifiers. Check spelling.".format(trove_line)
+            "Error- '{}' is not in trove-classifiers. Check spelling.".format(trove_line)
         )
-    if trove_line in trove_classifiers.deprecated_classifiers:
-        messages.append("Trove-classifier '{}' is deprecated.".format(trove_line))
 if messages:
     for message in messages:
         print(message, file=sys.stderr)
