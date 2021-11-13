@@ -21,17 +21,19 @@ config = configparser.ConfigParser()
 config.read("setup.cfg", encoding="utf-8")
 text = config.get("metadata", "classifiers")
 lines = text.splitlines()
-# remove comments and blank lines
-lines1 = [line for line in lines if not line.startswith("#")]
-lines2 = [line1 for line1 in lines1 if not line1 == ""]
-# No duplicates.
-items = set(lines2)
-if len(items) != len(lines2):
-    print("Duplicate classifiers are not allowed.", file=sys.stderr)
-    sys.exit(1)
+# remove blank lines
+lines = [line for line in lines if len(line) > 0]
+unique_lines = set(lines)
 messages = []
-for trove_line in lines2:
-    if trove_line not in trove_classifiers.classifiers:
+# Check for duplicates.
+if len(unique_lines) != len(lines):
+    for item in unique_lines:
+        if lines.count(item) > 1:
+            messages.append("Error- '{}' occurs more than once.".format(item))
+for trove_line in lines:
+    if trove_line in trove_classifiers.deprecated_classifiers:
+        messages.append("Error- '{}' is deprecated.".format(trove_line))
+    elif trove_line not in trove_classifiers.classifiers:
         messages.append(
             "Error- '{}' is not in trove-classifiers. Check spelling.".format(trove_line)
         )
