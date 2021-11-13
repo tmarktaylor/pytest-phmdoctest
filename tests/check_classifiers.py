@@ -35,7 +35,9 @@ for trove_line in lines:
         messages.append("Error- '{}' is deprecated.".format(trove_line))
     elif trove_line not in trove_classifiers.classifiers:
         messages.append(
-            "Error- '{}' is not in trove-classifiers. Check spelling.".format(trove_line)
+            "Error- '{}' is not in trove-classifiers. Check spelling.".format(
+                trove_line
+            )
         )
 if messages:
     for message in messages:
