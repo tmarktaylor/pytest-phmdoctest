@@ -65,8 +65,6 @@ jobs:
         coverage run --branch --source=src -m pytest -v tests
         coverage report --show-missing
         coverage xml
-      env:
-        PYTHONPATH: ${{ github.workspace }}/src
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       if: success() && ((github.ref == 'refs/heads/main') || (github.ref == 'refs/heads/develop'))
