@@ -102,10 +102,10 @@ jobs:
         flake8 --exit-zero --max-complexity=10
     - name: Deployable
       run: |
+        python tests/check_classifiers.py
         check-manifest -v
         python setup.py sdist
         twine check dist/*
-        python tests/check_classifiers.py
 
   docs:
     runs-on: ubuntu-latest

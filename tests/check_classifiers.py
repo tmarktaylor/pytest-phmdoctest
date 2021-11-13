@@ -39,6 +39,6 @@ for trove_line in lines:
         )
 if messages:
     for message in messages:
-        print(message, file=sys.stderr)
+        print(message)
     sys.exit(1)
 print("setup.cfg trove-classifiers are OK.")
