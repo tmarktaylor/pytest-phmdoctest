@@ -33,7 +33,7 @@ jobs:
           run: |
             pytest -v tests
 
-  venv_tests:
+  os:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
