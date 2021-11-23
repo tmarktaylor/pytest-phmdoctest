@@ -16,7 +16,6 @@ import sys
 import trove_classifiers
 
 
-print("Checking setup.cfg trove-classifiers for typos, duplicates, deprecated.")
 config = configparser.ConfigParser()
 config.read("setup.cfg", encoding="utf-8")
 text = config.get("metadata", "classifiers")
@@ -29,13 +28,13 @@ messages = []
 if len(unique_lines) != len(lines):
     for item in unique_lines:
         if lines.count(item) > 1:
-            messages.append("Error- '{}' occurs more than once.".format(item))
+            messages.append("setup.cfg Error- '{}' occurs more than once.".format(item))
 for trove_line in lines:
     if trove_line in trove_classifiers.deprecated_classifiers:
-        messages.append("Error- '{}' is deprecated.".format(trove_line))
+        messages.append("setup.cfg Error- '{}' is deprecated.".format(trove_line))
     elif trove_line not in trove_classifiers.classifiers:
         messages.append(
-            "Error- '{}' is not in trove-classifiers. Check spelling.".format(
+            "setup.cfg Error- '{}' is not in trove-classifiers. Check spelling.".format(
                 trove_line
             )
         )

@@ -152,7 +152,7 @@ tests/test_example.py::test_example PASSED
 ```
 - The sample project above can be viewed on GitHub at `tests/sample`.
 - The doc__ indicates the Markdown file was collected from the
-  the doc folder.
+  doc folder.
 - The plugin does not need the pytest option --doctest-modules.
 - You can add --phmdoctest to the addopts section
   of a pytest configuration ini file. Pick one.
@@ -308,6 +308,9 @@ option. Specify a target directory for the files.
 
 ## Hints
 
+- The plugin supports phmdoctest HTML comment directives that are placed in the
+  Markdown. Among them are directives to designate setup, teardown,
+  and skipped blocks. 
 - When invoking pytest, cwd must be in the subpath of the files to be collected
   to avoid this error from pathlib.py in relative_to():
   ValueError: `<file to be collected>` is not in the subpath of `<working directory>`
