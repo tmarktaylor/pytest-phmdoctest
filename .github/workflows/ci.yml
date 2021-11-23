@@ -10,6 +10,29 @@ on:
     branches: [develop]
 
 jobs:
+  versions:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          python-version: ["3.7", "3.8", "3.9", "3.10", "pypy3"]
+      steps:
+        - uses: actions/checkout@v2
+        - name: Setup Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: ${{ matrix.python-version }}
+        - name: Install
+          run: |
+            echo $GITHUB_REPOSITORY $GITHUB_REF $GITHUB_WORKFLOW
+            python -m pip install --upgrade pip
+            pip install --no-deps "."
+            pip install -r requirements.txt
+            pip install -r tests/requirements.txt
+            pip freeze
+        - name: Test suite
+          run: |
+            pytest -v tests
+
   venv_tests:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -85,6 +108,7 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
+        echo $GITHUB_REPOSITORY $GITHUB_REF $GITHUB_WORKFLOW
         python -m pip install --upgrade pip
         pip install -r tests/requirements_inspect.txt
         python -m pip install trove-classifiers

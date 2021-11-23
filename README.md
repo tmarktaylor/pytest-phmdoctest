@@ -64,7 +64,6 @@ It generates a pytest test file from a Markdown file.
 [![](https://img.shields.io/pypi/pyversions/pytest-phmdoctest.svg)](https://pypi.python.org/pypi/pytest-phmdoctest)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[![Usage Test](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/install.yml/badge.svg)](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/install.yml)
 [![CI Test](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/ci.yml/badge.svg)](https://github.com/tmarktaylor/pytest-phmdoctest/actions/workflows/ci.yml)
 [![Build status](https://ci.appveyor.com/api/projects/status/fa0frmueq4h94v23/branch/main?svg=true)](https://ci.appveyor.com/project/tmarktaylor/pytest-phmdoctest/branch/main)
 [![readthedocs](https://readthedocs.org/projects/pytest-phmdoctest/badge/?version=latest)](https://pytest-phmdoctest.readthedocs.io/en/latest/?badge=latest)
