@@ -309,7 +309,7 @@ option. Specify a target directory for the files.
 
 - The plugin supports phmdoctest HTML comment directives that are placed in the
   Markdown. Among them are directives to designate setup, teardown,
-  and skipped blocks. 
+  and skipped blocks.
 - When invoking pytest, cwd must be in the subpath of the files to be collected
   to avoid this error from pathlib.py in relative_to():
   ValueError: `<file to be collected>` is not in the subpath of `<working directory>`
