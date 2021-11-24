@@ -1,7 +1,7 @@
 name: CI
 
 # Notes:
-# - The venv_tests job installs pytest-phmdoctest in a virtual environment.
+# - The os job installs pytest-phmdoctest in a virtual environment.
 # - The coverage job installs pytest-phmdoctest in develop mode.
 # - The inspect job does not install pytest-phmdoctest.
 on:
