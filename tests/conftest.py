@@ -5,8 +5,6 @@ from itertools import zip_longest
 
 import pytest
 
-pytest_plugins = ["pytester"]
-
 
 @pytest.fixture()
 def checker():
@@ -27,13 +25,36 @@ def checker():
 
 
 @pytest.fixture()
+def testfile_checker(pytester, checker):
+    """Return callable that compares pre existing file to testfile.
+
+    This fixture is designed to run in a test case that injects the
+    pytester fixture. pytester sets the current working directory
+    to a temporary directory while it is active. pytester.copy_example()
+    provides relative access to the project's directory.
+
+    Caution: pytester.copy_example() writes a copy of file existing_filename
+    at the pytester current working directory.
+    """
+
+    def check_it(existing_filename, testfile):
+        """Compare pre existing file to testfile."""
+        expected_file = pytester.copy_example(existing_filename)
+        expected_contents = Path(expected_file).read_text(encoding="utf-8")
+        checker(expected_contents, testfile)
+
+    return check_it
+
+
+@pytest.fixture()
 def file_creator():
     """Return an instance of FileCreator to copy example files to pytester."""
 
     class FileCreator:
         """Copy files to pytester temporary directory/"""
 
-        def populate_root(self, pytester_object):
+        @staticmethod
+        def populate_root(pytester_object):
             """Copy .md files into pytester's working directory as shown below.
 
             CAUTION- When populating sub directories with filenames also present
@@ -49,7 +70,8 @@ def file_creator():
             pytester_object.copy_example("tests/sample/CONTRIBUTING.md")
             pytester_object.copy_example("tests/sample/README.md")
 
-        def populate_doc(self, pytester_object):
+        @staticmethod
+        def populate_doc(pytester_object):
             """Copy .md files into pytester's working directory as shown below.
 
             doc
@@ -75,6 +97,8 @@ def file_creator():
                 directive2.md
                 nocode.md
                 project.md
+            src
+                do_not_import_me.py
             tests
                 test_example.py
             """
@@ -85,6 +109,9 @@ def file_creator():
                 pytester_object=pytester_object
             )  # must be last of populates
 
+            pytester_object.mkdir("src")
+            pytester_object.copy_example("tests/sample/src/do_not_import_me.py")
+            Path("do_not_import_me.py").rename("src/do_not_import_me.py")
             pytester_object.mkdir("tests")
             pytester_object.copy_example("tests/sample/tests/test_example.py")
             Path("test_example.py").rename("tests/test_example.py")
