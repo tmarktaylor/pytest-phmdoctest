@@ -1,2 +1,6 @@
 # These need to be present in [options] install_requires in setup.cfg.
-phmdoctest >= 1.3.0
+packaging
+py
+pytest >= 5.4.3
+phmdoctest >= 1.4.0
+commonmark >= 0.9.1
