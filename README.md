@@ -1,4 +1,4 @@
-# pytest-phmdoctest 0.0.3
+# pytest-phmdoctest 1.0.0
 
 ## Introduction
 

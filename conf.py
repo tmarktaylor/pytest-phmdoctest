@@ -12,11 +12,11 @@
 # Configuration for Sphinx
 
 project = "pytest-phmdoctest"
-copyright = "2021, Mark Taylor"
+copyright = "2021-2022, Mark Taylor"
 author = "Mark Taylor"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.3"
+release = "1.0.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -28,6 +28,8 @@ extensions = [
     "sphinx_rtd_theme",
     "myst_parser",
 ]
+
+myst_heading_anchors = 2
 
 source_suffix = {
     ".rst": "restructuredtext",
