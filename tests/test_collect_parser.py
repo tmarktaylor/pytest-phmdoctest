@@ -179,18 +179,12 @@ def test_bad_argument():
 
 
 def show_args(line: str) -> None:
-    """Show the dict created by parsing a collect section line.
-
-    If the parsing fails, catch and print the exception message instead.
-    """
-    try:
-        args = parse_collect_line(parser, line)
+    """Show the dict created by parsing a collect section line."""
+    args = parse_collect_line(parser, line)
+    if "ini-error" not in args:
         glob = args.pop("file_glob")
         print("glob=", glob)
         print("args=", args)
-    except ValueError as exc_info:
-        print("Caught ValueError from parse_collect_lines...")
-        print(exc_info)
 
 
 def _main():
