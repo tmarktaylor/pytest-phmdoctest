@@ -1,8 +1,6 @@
 """Test cases for pytest plugin pytest-phmdoctest README.md docs."""
 from pathlib import Path
 
-import pytest
-
 
 def test_collect_only_readme_tox(pytester, file_creator):
     """Configure tox.ini to collect README.md at root."""
@@ -11,7 +9,7 @@ def test_collect_only_readme_tox(pytester, file_creator):
     pytester.makeini(
         """
         [pytest]
-        addopts = --phmdoctest
+        addopts = --phmdoctest-docmod
         phmdoctest-collect =
             README.md
         """
@@ -24,7 +22,33 @@ def test_collect_only_readme_tox(pytester, file_creator):
         [
             "*::README.py::README.session_00001_line_24*",
             "*::README.py::test_code_10_output_17*",
-            "*tests/test_example.py::test_example*",  #  pre-existing pytest file
+            "*tests/test_example.py::test_example*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_tox_has_doctest_options(pytester, file_creator):
+    """Configure tox.ini to collect README.md at root."""
+
+    # Note tox.ini here and pytest.ini have the same format.
+    pytester.makeini(
+        """
+        [pytest]
+        addopts = --phmdoctest-generate=.gendir --doctest-modules --ignore src
+        phmdoctest-collect =
+            README.md
+        """
+    )
+    assert Path("tox.ini").exists()
+    file_creator.populate_all(pytester_object=pytester)
+    rr = pytester.runpytest("-v", ".", ".gendir")
+    rr.assert_outcomes(passed=3)
+    rr.stdout.fnmatch_lines(
+        [
+            "*tests/test_example.py::test_example*",
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
         ],
         consecutive=True,
     )
@@ -38,7 +62,7 @@ def test_collect_only_readme_pytest(pytester, file_creator):
         ".ini",
         pytest="""
         [pytest]
-        addopts = --phmdoctest
+        addopts = --phmdoctest-docmod
         phmdoctest-collect =
             README.md
         """,
@@ -51,7 +75,7 @@ def test_collect_only_readme_pytest(pytester, file_creator):
         [
             "*::README.py::README.session_00001_line_24*",
             "*::README.py::test_code_10_output_17*",
-            "*tests/test_example.py::test_example*",  #  pre-existing pytest file
+            "*tests/test_example.py::test_example*",
         ],
         consecutive=True,
     )
@@ -64,20 +88,48 @@ def test_collect_only_readme_setup(pytester, file_creator):
         ".cfg",
         setup="""
         [tool:pytest]
-        addopts = --phmdoctest
+        addopts = --phmdoctest-generate=.gendir
         phmdoctest-collect =
             README.md
         """,
     )
     assert Path("setup.cfg").exists()
     file_creator.populate_all(pytester_object=pytester)
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest(
+        "-v", ".", ".gendir", "--doctest-modules", "--ignore", "src"
+    )
     rr.assert_outcomes(passed=3)
     rr.stdout.fnmatch_lines(
         [
-            "*::README.py::README.session_00001_line_24*",
-            "*::README.py::test_code_10_output_17*",
-            "*tests/test_example.py::test_example*",  #  pre-existing pytest file
+            "*tests/test_example.py::test_example*",
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_setup_has_doctest_options(pytester, file_creator):
+    """Configure setup.cfg to collect README.md at root."""
+
+    pytester.makefile(
+        ".cfg",
+        setup="""
+        [tool:pytest]
+        addopts = --phmdoctest-generate=.gendir --doctest-modules --ignore src
+        phmdoctest-collect =
+            README.md
+        """,
+    )
+    assert Path("setup.cfg").exists()
+    file_creator.populate_all(pytester_object=pytester)
+    rr = pytester.runpytest("-v", ".", ".gendir")
+    rr.assert_outcomes(passed=3)
+    rr.stdout.fnmatch_lines(
+        [
+            "*tests/test_example.py::test_example*",
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
         ],
         consecutive=True,
     )
@@ -90,7 +142,7 @@ def test_collect_only_readme_pyproject(pytester, file_creator):
         ".toml",
         pyproject="""
         [tool.pytest.ini_options]
-        addopts = "--phmdoctest"
+        addopts = "--phmdoctest-generate=.gendir"
         phmdoctest-collect = [
             "README.md",
         ]
@@ -98,13 +150,42 @@ def test_collect_only_readme_pyproject(pytester, file_creator):
     )
     assert Path("pyproject.toml").exists()
     file_creator.populate_all(pytester_object=pytester)
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest(
+        "-v", ".", ".gendir", "--doctest-modules", "--ignore", "src"
+    )
     rr.assert_outcomes(passed=3)
     rr.stdout.fnmatch_lines(
         [
-            "*::README.py::README.session_00001_line_24*",
-            "*::README.py::test_code_10_output_17*",
-            "*tests/test_example.py::test_example*",  #  pre-existing pytest file
+            "*tests/test_example.py::test_example*",
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_pyproject_has_doctest_options(pytester, file_creator):
+    """Configure pyproject.toml to collect README.md at root."""
+
+    pytester.makefile(
+        ".toml",
+        pyproject="""
+        [tool.pytest.ini_options]
+        addopts = "--phmdoctest-generate=.gendir --doctest-modules --ignore src"
+        phmdoctest-collect = [
+            "README.md",
+        ]
+        """,
+    )
+    assert Path("pyproject.toml").exists()
+    file_creator.populate_all(pytester_object=pytester)
+    rr = pytester.runpytest("-v", ".", ".gendir")
+    rr.assert_outcomes(passed=3)
+    rr.stdout.fnmatch_lines(
+        [
+            "*tests/test_example.py::test_example*",
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
         ],
         consecutive=True,
     )
@@ -117,12 +198,11 @@ def test_collect_skip(pytester):
     phmdoctest-collect section.
     """
 
-    pytester.makeconftest('pytest_plugins = ["pytest_phmdoctest"]')
     pytester.makefile(
         ".toml",
         pyproject="""
         [tool.pytest.ini_options]
-        addopts = "--phmdoctest"
+        addopts = "--phmdoctest-docmod"
         phmdoctest-collect = [
             'doc/example2.md --skip "Python 3.7" -sLAST',
         ]
@@ -147,6 +227,40 @@ def test_collect_skip(pytester):
     )
 
 
+def test_collect_fail_nocode(pytester):
+    """Collect section --skip skips all, so --fail-nocode generates a failing test.
+
+    This test shows how the option --fail-nocode causes a test failure
+    when all the code blocks are skipped by the --skip options.
+    --skip TEXT selects all blocks that contain TEXT.
+    The --skip print selects 5 Python code blocks.
+    """
+
+    pytester.makefile(
+        ".toml",
+        pyproject="""
+        [tool.pytest.ini_options]
+        addopts = "--phmdoctest-docmod"
+        phmdoctest-collect = [
+            "doc/example2.md --skip print --skip Greetings --skip Fraction --fail-nocode",
+        ]
+        """,
+    )
+    assert Path("pyproject.toml").exists()
+    pytester.mkdir("doc")
+    pytester.copy_example("tests/markdown/example2.md")
+    Path("example2.md").rename("doc/example2.md")
+    assert Path("doc/example2.md").exists()
+    rr = pytester.runpytest("-v")
+    rr.assert_outcomes(failed=1)
+    rr.stdout.fnmatch_lines(
+        [
+            "*::doc__example2.py::test_nothing_fails FAILED*",
+        ],
+        consecutive=True,
+    )
+
+
 def test_collect_setup(pytester):
     """Collect section --setup and --teardown args."""
 
@@ -154,7 +268,7 @@ def test_collect_setup(pytester):
         ".ini",
         pytest="""
         [pytest]
-        addopts = --phmdoctest
+        addopts = --phmdoctest-docmod
         phmdoctest-collect =
             doc/setup.md --setup FIRST --teardown LAST
         """,
@@ -184,7 +298,7 @@ def test_collect_setup_doctest(pytester):
         ".ini",
         pytest="""
         [pytest]
-        addopts = --phmdoctest
+        addopts = --phmdoctest-docmod
         phmdoctest-collect =
             doc/setup_doctest.md -u FIRST -d LAST --setup-doctest
         """,
@@ -209,32 +323,6 @@ def test_collect_setup_doctest(pytester):
     )
 
 
-def test_auto_ignore_override(pytester, file_creator):
-    """Collect section specifies file that would otherwise be auto-ignored."""
-
-    pytester.makefile(
-        ".toml",
-        pyproject="""
-        [tool.pytest.ini_options]
-        addopts = "--phmdoctest"
-        phmdoctest-collect = [
-            'CONTRIBUTING.md',
-        ]
-        """,
-    )
-    assert Path("pyproject.toml").exists()
-    file_creator.populate_all(pytester_object=pytester)
-    rr = pytester.runpytest("-v")
-    rr.assert_outcomes(passed=2)
-    rr.stdout.fnmatch_lines(
-        [
-            "*::CONTRIBUTING.py::test_nothing_passes*",
-            "*tests/test_example.py::test_example*",
-        ],
-        consecutive=True,
-    )
-
-
 def test_collect_section_parse_failure(pytester, file_creator):
     """Parse collect section from pytest.ini and fail on last line.
 
@@ -253,7 +341,7 @@ def test_collect_section_parse_failure(pytester, file_creator):
     pytester.makeini(
         """
         [pytest]
-        addopts = --phmdoctest
+        addopts = --phmdoctest-docmod
         phmdoctest-collect =
             README.md
             doc/example*.md
@@ -264,15 +352,12 @@ def test_collect_section_parse_failure(pytester, file_creator):
     rr = pytester.runpytest("-v")
     rr.stdout.fnmatch_lines(
         [
-            "*::CONTRIBUTING.py::test_ini_failed*",
             "*::README.py::README.session_00001_line_24*",
             "*::README.py::test_code_10_output_17*",
-            "*::doc__README.py::test_ini_failed*",
             "*::doc__directive2.py::test_ini_failed*",
-            "*::doc__nocode.py::test_ini_failed*",
             "*::doc__project.py::test_ini_failed*",
             "*tests/test_example.py::test_example*",
         ],
         consecutive=False,
     )
-    rr.assert_outcomes(failed=5, passed=3)
+    rr.assert_outcomes(failed=2, passed=3)

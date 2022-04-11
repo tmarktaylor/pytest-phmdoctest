@@ -1,10 +1,8 @@
 """Test cases for make_collect_parser() and parse_collect_line()."""
 import re
 
-import pytest
-
-from pytest_phmdoctest.plugin import make_collect_parser
-from pytest_phmdoctest.plugin import parse_collect_line
+from pytest_phmdoctest.settings import make_collect_parser
+from pytest_phmdoctest.settings import parse_collect_line
 
 parser = make_collect_parser()
 
@@ -146,7 +144,7 @@ def test_bad_argument():
     expected_lines1 = [
         "pytest-phmdoctest parse error on the following line:",
         "myglob --bogus --skip Floats --setup MyTEXT --setup-doctest",
-        "usage: CollectSection [-h] [--skip TEXT] [--fail-nocode] [--setup TEXT]",
+        "usage: FileSettings [-h] [--skip TEXT] [--fail-nocode] [--setup TEXT]",
         "                      [--teardown TEXT] [--setup-doctest]",
         "                      file_glob",
     ]
@@ -185,7 +183,6 @@ def show_args(line: str) -> None:
 
     If the parsing fails, catch and print the exception message instead.
     """
-    parser = make_collect_parser()
     try:
         args = parse_collect_line(parser, line)
         glob = args.pop("file_glob")
