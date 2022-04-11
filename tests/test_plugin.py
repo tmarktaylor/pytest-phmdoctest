@@ -103,6 +103,16 @@ def test_bad_usage(pytester):
     rr.stderr.fnmatch_lines(expected_usage_lines)
 
 
+def test_testfile_checker(pytester, testfile_checker):
+    """Show testfile_checker fixture can find an error."""
+    filename = "requirements.txt"
+    pytester.copy_example(filename)
+    contents = Path(filename).read_text(encoding="utf-8")
+    modified_contents = contents.replace("phmdoctest", "bogus-phmdoctest")
+    with pytest.raises(AssertionError):
+        testfile_checker(filename, modified_contents)
+
+
 def test_generate_collect_root(pytester):
     """1. A single file at pytest root is collected and tested... .
 
