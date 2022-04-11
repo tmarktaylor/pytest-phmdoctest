@@ -75,7 +75,7 @@ class MockDoctestModule:
     """Method from_parent takes 1 more arg than caller expects.
 
     Return an object that is incompatible with DoctestModule.
-    Observed it cause pytest ExitCode.INTERRUPTED.
+    Manually observed it cause pytest ExitCode.INTERRUPTED.
     This implies that args/parameter mismatch raised TypeError.
     """
 
