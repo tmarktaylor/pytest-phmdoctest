@@ -2,9 +2,9 @@
 include *.md
 
 # Include the license, checklist, requirements
+include *.py
 include *.txt
 include CONTRIBUTING.md
-include conf.py
 include index.rst
 include .gitignore
 include *.yml
