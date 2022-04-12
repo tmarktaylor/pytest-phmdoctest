@@ -1,11 +1,14 @@
 """Test cases for pytest plugin pytest-phmdoctest README.md docs."""
+import inspect
+from packaging.version import Version
 from pathlib import Path
 import re
 import subprocess
 import sys
 from typing import List
 
-import inspect
+import _pytest.doctest
+
 import phmdoctest.tool
 import pytest_phmdoctest
 import pytest_phmdoctest.collectors
@@ -61,8 +64,10 @@ def make_pytest_command(code: str) -> str:
 
 def collected_items(code: str) -> List[str]:
     """Extract passing and failing items from fnmatch_lines() call in code."""
+    # remove any lines with comments
+    code_less_comments = re.sub(r"#.*?$", "", code, flags=re.MULTILINE)
     pattern = r'"[*](.* PASSED|.* FAILED)[*]"'
-    return re.findall(pattern=pattern, string=code)
+    return re.findall(pattern=pattern, string=code_less_comments)
 
 
 def make_test_session(num_collected: int, expected_items: List[str]) -> str:
@@ -253,6 +258,81 @@ def test_phmdoctest_docmod_example(checker):
     assert len(items) == num_collected
     want2 = make_test_session(num_collected, items)
     got2 = labeled_fcbs.contents(label="phmdoctest-docmod-output")
+    checker(want2, got2)
+
+
+pytest_version = Version(pytest.__version__)
+PYTEST_LT_7 = pytest_version < Version("7.0")
+
+
+class DemoMockDoctestModule:
+    """Method from_parent takes 1 more arg than caller expects.
+
+    Manually observed it cause pytest ExitCode.INTERRUPTED.
+    This implies that args/parameter mismatch raised TypeError.
+    If caller calls with correct args, return an unuseable object.
+    """
+
+    def from_parent(self, parent, path, extra_arg):
+        return 99
+
+
+@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest < 7")
+def test_broken_doctest_module(pytester, file_creator, monkeypatch):
+    """Inject a DoctestModule that will raise an exception.
+
+    Verify logic to handle DoctestModule.from_parent() raising an exception.
+    Note that _pytest.doctest.DoctestModule is not part of the pytest
+    public API (not imported by import pytest).
+    If a future pytest version changes the function or parameters or
+    class the code tested here will show the root cause of the problem.
+    """
+    monkeypatch.setattr(_pytest.doctest, "DoctestModule", DemoMockDoctestModule())
+
+    # pytester.copy_example("tests/markdown/one_session_block.md")
+    # Show that non-doctests are still run
+    # pytester.copy_example("tests/sample/README.md")
+
+    file_creator.populate_all(pytester_object=pytester)
+
+    rr = pytester.runpytest("-v", "--phmdoctest-docmod")
+    assert rr.ret == pytest.ExitCode.TESTS_FAILED
+    rr.assert_outcomes(passed=6, failed=2)
+    rr.stdout.fnmatch_lines(
+        [
+            "*::README.py::test_code_10_output_17 PASSED*",
+            "*::README.py::test_unable_to_collect_doctests FAILED*",
+            "*::doc__directive2.py::test_code_25_output_32 PASSED*",
+            "*::doc__directive2.py::test_code_42_output_47 PASSED*",
+            "*::doc__directive2.py::test_code_52_output_56 PASSED*",
+            "*::doc__project.py::test_code_12_output_19 PASSED*",
+            "*::doc__project.py::test_unable_to_collect_doctests FAILED*",
+            "*tests/test_example.py::test_example PASSED*",
+        ],
+        consecutive=False,
+    )
+
+
+@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest < 7")
+def test_broken_doctest_module_example(checker):
+    """Test the --phmdoctest-generate and collect example in README.md.
+
+    Assure the example in README.md is accurate by checking the results
+    in stdout that the pytester test case produced.
+    The example should contain some of the output captured by pytester.
+
+    We assume that test_broken_doctest_module() passes and use the expected
+    stdout provided to RunResult.stdout.fnmatch_lines().
+    """
+    src = inspect.getsource(test_broken_doctest_module)
+    want1 = make_pytest_command(src)
+    got1 = labeled_fcbs.contents(label="phmdoctest-bad-api-command")
+    checker(want1, got1)
+    num_collected = 8
+    items = collected_items(src)
+    assert len(items) == num_collected
+    want2 = make_test_session(num_collected, items)
+    got2 = labeled_fcbs.contents(label="phmdoctest-bad-api-output")
     checker(want2, got2)
 
 
