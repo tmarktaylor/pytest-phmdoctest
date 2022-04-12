@@ -44,7 +44,7 @@ pytest_version = Version(pytest.__version__)
 PYTEST_LT_7 = pytest_version < Version("7.0")
 
 
-@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest <= 7")
+@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest < 7")
 def test_import_doctest_module_fails(pytester, monkeypatch):
     """Cause import of _pytest.doctest.DoctestModule to fail.
 
@@ -74,16 +74,16 @@ def test_import_doctest_module_fails(pytester, monkeypatch):
 class MockDoctestModule:
     """Method from_parent takes 1 more arg than caller expects.
 
-    Return an object that is incompatible with DoctestModule.
     Manually observed it cause pytest ExitCode.INTERRUPTED.
     This implies that args/parameter mismatch raised TypeError.
+    If caller calls with correct args, return an unuseable object.
     """
 
     def from_parent(self, parent, path, extra_arg):
         return 99
 
 
-@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest <= 7")
+@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest < 7")
 def test_bad_doctest_module(pytester, monkeypatch):
     """Inject a DoctestModule that will raise an exception.
 
@@ -96,11 +96,15 @@ def test_bad_doctest_module(pytester, monkeypatch):
     monkeypatch.setattr(_pytest.doctest, "DoctestModule", MockDoctestModule())
     pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     pytester.copy_example("tests/markdown/one_session_block.md")
+    # Show that non-doctests are still run
+    pytester.copy_example("tests/sample/README.md")
     rr = pytester.runpytest("-v")
     assert rr.ret == pytest.ExitCode.TESTS_FAILED
-    rr.assert_outcomes(failed=1)
+    rr.assert_outcomes(passed=1, failed=2)
     rr.stdout.fnmatch_lines(
         [
+            "*::README.py::test_code_10_output_17 PASSED*",
+            "*::README.py::test_unable_to_collect_doctests FAILED*",
             "*::one_session_block.py::test_unable_to_collect_doctests FAILED*",
             "*built from one_session_block.md*",
             "*pytest_phmdoctest.collectors.make_doctest_module() raised*",
@@ -110,7 +114,7 @@ def test_bad_doctest_module(pytester, monkeypatch):
     )
 
 
-@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest <= 7")
+@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest < 7")
 def test_bad_doctest_skip_session(pytester, monkeypatch):
     """Inject a DoctestModule that will raise an exception.
 
@@ -131,7 +135,7 @@ def test_bad_doctest_skip_session(pytester, monkeypatch):
     )
 
 
-@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest <= 7")
+@pytest.mark.skipif(PYTEST_LT_7, reason="n/a pytest < 7")
 def test_bad_doctest_skip_session_code_example(pytester, monkeypatch):
     """Inject a DoctestModule that will raise an exception.
 
