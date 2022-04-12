@@ -339,6 +339,7 @@ def test_broken_doctest_module_example(checker):
 expected_gendir = ["test_doc__directive2.py", "test_doc__project.py", "test_README.py"]
 
 
+
 def test_phmdoctest_generate(pytester, file_creator):
     """Test the --phmdoctest-generate option."""
 
@@ -356,7 +357,10 @@ def test_phmdoctest_generate(pytester, file_creator):
         consecutive=True,
     )
     gendir_contents = [p.name for p in Path(".gendir").glob("*.*")]
-    assert expected_gendir == gendir_contents
+    # Comparison is not dependent on glob order which could differ by OS.
+    sorted_gendir_contents = sorted(gendir_contents)
+    sorted_expected_gendir = sorted(expected_gendir)
+    assert sorted_expected_gendir == sorted_gendir_contents
 
 
 def test_phmdoctest_generate_example(checker):
