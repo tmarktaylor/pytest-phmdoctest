@@ -152,12 +152,9 @@ def test_bad_argument():
         "Process a line of ini file phmdoctest-collect section.",
     ]
     expected_lines3 = [
-        # "positional arguments:",
         "  file_glob             Generate test file for matching markdown file.",
     ]
     expected_lines4 = [
-        # "optional arguments:",
-        # "  -h, --help            show this help message and exit",
         "  --skip TEXT, -s TEXT",
         "  --fail-nocode",
         "  --setup TEXT, -u TEXT",

@@ -326,16 +326,16 @@ def test_collect_setup_doctest(pytester):
 def test_collect_section_parse_failure(pytester, file_creator):
     """Parse collect section from pytest.ini and fail on last line.
 
-    The first file tried is CONTRIBUTING.md. It does not the globs
-    on the first two lines of the ini file.
-    When the 3rd line is tried the parse error is detected.
-    The plugin generates test file CONTRIBUTING.py which has one
+    When the 3rd line in the collect section is tried the parse error
+    is detected. This happens for each Markdown file tried that
+    does not match the first 2 globs in the ini file.
+
+    The 3rd line is tried for doc/directive2.md and
+    doc/project.md. The plugin generates a test file for each that has one
     test called test_ini_failed which prints an error message to stdout
     and raises an assertion.
 
     README.md matches the first glob and collects 2 test cases that pass.
-    The 4 files in the doc folder suffer the same fate as
-    CONTRIBUTING.md and collect test files with the failing test.
     tests/test_example.py is collected normally with 1 passing test case.
     """
     pytester.makeini(
@@ -352,11 +352,11 @@ def test_collect_section_parse_failure(pytester, file_creator):
     rr = pytester.runpytest("-v")
     rr.stdout.fnmatch_lines(
         [
-            "*::README.py::README.session_00001_line_24*",
-            "*::README.py::test_code_10_output_17*",
-            "*::doc__directive2.py::test_ini_failed*",
-            "*::doc__project.py::test_ini_failed*",
-            "*tests/test_example.py::test_example*",
+            "*::README.py::README.session_00001_line_24 PASSED*",
+            "*::README.py::test_code_10_output_17 PASSED*",
+            "*::doc__directive2.py::test_ini_failed FAILED*",
+            "*::doc__project.py::test_ini_failed FAILED*",
+            "*tests/test_example.py::test_example PASSED*",
         ],
         consecutive=False,
     )
