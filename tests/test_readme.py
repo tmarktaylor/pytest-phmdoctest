@@ -406,24 +406,6 @@ def test_collect_section_example(checker):
     checker(want2, got2)
 
 
-def test_collect_nodeid(pytester, file_creator):
-    """Collect a generated test file by nodeid."""
-
-    file_creator.populate_all(pytester_object=pytester)
-    rr = pytester.runpytest("--phmdoctest-docmod", "-v", "-k", "README.py")
-    if pytest_phmdoctest.collectors.PYTEST_GE_7:
-        rr.assert_outcomes(passed=2, deselected=8)
-    else:
-        rr.assert_outcomes(passed=2)
-    rr.stdout.fnmatch_lines(
-        [
-            "*::README.py::README.session_00001_line_24 PASSED*",
-            "*::README.py::test_code_10_output_17 PASSED*",
-        ],
-        consecutive=True,
-    )
-
-
 def test_quick_links():
     """Make sure the README.md quick links are up to date."""
     filename = "README.md"
