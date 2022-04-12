@@ -72,18 +72,25 @@ def test_generate_to_existing_dir(pytester):
     """Generated testfile saved to pre-existing dir and gets collected from it.
 
     Note we populate doc/project.md.
-    When running pytest on saved test files, the pytest --doctest-modules
+    When running pytest on generated test files, the pytest --doctest-modules
     is needed to test the Python interactive sessions.
     """
     pytester.mkdir(".gendir")
     pytester.copy_example("tests/sample/doc/project.md")
     pytester.mkdir("doc")
     Path("project.md").rename("doc/project.md")
+
+    # Show an out of place .md file in .gendir does not get collected.
+    # It will be renamed by plugin.purge_markdown_from().
+    pytester.copy_example("tests/sample/doc/project.md")
+    Path("project.md").rename(".gendir/unwanted.md")
+
     rr = pytester.runpytest(
         "-v", "--phmdoctest-generate", ".gendir", ".", ".gendir", "--doctest-modules"
     )
     assert rr.ret == pytest.ExitCode.OK
     assert Path(".gendir/test_doc__project.py").exists()
+    assert Path(".gendir/unwanted_md.sav").exists()
     rr.assert_outcomes(passed=4)
     rr.stdout.fnmatch_lines(
         [
@@ -96,15 +103,13 @@ def test_generate_to_existing_dir(pytester):
     )
 
     # Run again selecting root to be collected.  This will generate and collect
-    # overwriting the populated savedir.  We expect the failing test to get
+    # overwriting the populated .gendir.  We expect the failing test to get
     # overwritten.
-    # Modify savedir/test_doc__project.py so it fails.
+    # Modify .gendir/test_doc__project.py so it fails.
     filename = ".gendir/test_doc__project.py"
     contents = Path(filename).read_text(encoding="utf-8")
     failing_test = "\ndef test_fails():\n    assert False, 'intentionally failing test'"
     contents += failing_test
-    # with open(filename, "w", encoding="utf-8") as f:
-    #     f.write(contents)
     _ = Path(filename).write_text(contents, encoding="utf-8")
 
     # Show there is now a failing test in .gendir.
@@ -165,7 +170,6 @@ def test_generate_all(pytester, file_creator):
     assert Path(".gendir/test_doc__project.py").exists()
     assert Path(".gendir/test_README.py").exists()
     assert len(list(Path(".gendir").iterdir())) == 3
-
     # Files with no Python fenced code blocks did not get collected.
     assert not Path(".gendir/test_CONTRIBUTING.py").exists()
 

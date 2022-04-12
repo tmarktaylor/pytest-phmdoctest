@@ -63,6 +63,20 @@ def with_stem(path: Path, stem: str) -> Path:
     return path.with_name(stem + path.suffix)
 
 
+def purge_markdown_from(target_dir: Path) -> None:
+    """Clean target_dir directory of any Markdown files.
+
+    Prevent future collection of pre-existing .md files in target_dir.
+    The FILENAME.md files found in target_dir are renamed
+    to FILENAME_md.sav.
+    """
+
+    for existing_path in target_dir.glob("*.md"):
+        preserve_path = existing_path.with_suffix(".sav")
+        preserve_path = with_stem(preserve_path, existing_path.stem + "_md")
+        existing_path.replace(preserve_path)
+
+
 def pytest_configure(config):
     """pytest initialization hook. Adds attributes to caller's config."""
     # Only one option allowed:
@@ -107,6 +121,7 @@ def pytest_configure(config):
             generate_dir = config.invocation_params.dir / p
         config.phmdoctest_filesystem_dir = Path(generate_dir)
         phmdoctest.tool.wipe_testfile_directory(generate_dir)
+        purge_markdown_from(generate_dir)
 
 
 # Please be aware that mypy says error: All conditional function variants

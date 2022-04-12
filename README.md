@@ -214,12 +214,39 @@ tests/test_example.py::test_example PASSED
 - If  `--phmdoctest-docmod` doctest collection breaks,
   the rest of the plugin `--phmdoctest` and `--phmdoctest-generate`
   options still work. The test suite simulates such breaking
-  changes. See the test_docmod.py test functions
+  changes. See the test_readme and test_docmod.py test functions
   that take the monkeypatch fixture.
 - The `line_24` in the function name `session_00001_line_24` is the
   line number in tests/sample/README.md of the first line
   of the interactive session. `00001` is a sequence number to
   order the doctests.
+
+Here is simulated output captured when `--phmdoctest-docmod`
+doctest collection breaks due to incompatible DoctestModule API.
+
+<!--phmdoctest-label phmdoctest-bad-api-command-->
+```shell
+pytest -v --phmdoctest-docmod
+```
+
+<!--phmdoctest-label phmdoctest-bad-api-output-->
+```text
+plugins: phmdoctest-1.0.0
+collected 8 items
+
+::README.py::test_code_10_output_17 PASSED
+::README.py::test_unable_to_collect_doctests FAILED
+::doc__directive2.py::test_code_25_output_32 PASSED
+::doc__directive2.py::test_code_42_output_47 PASSED
+::doc__directive2.py::test_code_52_output_56 PASSED
+::doc__project.py::test_code_12_output_19 PASSED
+::doc__project.py::test_unable_to_collect_doctests FAILED
+tests/test_example.py::test_example PASSED
+```
+- There is one FAILED test called for each Markdown file with
+  Python interactive sessions.
+- The Python code/expected output examples still run successfully.
+- The pytest test case in tests/test_example.py succeeds.
 
 ## Generate test files
 
@@ -258,6 +285,9 @@ tests/test_example.py::test_example PASSED
   - Files in target_dir with other extensions are not modified.
   - A FILENAME.py pre-existing in target_dir is only renamed
     and not deleted.
+- .gendir is cleaned of all *.md files as well.
+  Pre-existing FILENAME.md files in the output directory get renamed
+  to FILENAME_md.sav.
 - If .gendir was empty, it will now have these `*.py` files:
 
 <!--phmdoctest-label gendir-files-->
