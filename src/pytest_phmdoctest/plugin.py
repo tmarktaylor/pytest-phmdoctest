@@ -136,7 +136,6 @@ if collectors.PYTEST_GE_7:
         pathy = collectors.Pathy(file_path)
         return pathy_collect_file(pathy, parent)
 
-
 else:
 
     def pytest_collect_file(
