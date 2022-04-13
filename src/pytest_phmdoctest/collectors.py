@@ -15,9 +15,7 @@ from pytest import Module
 
 
 pytest_version = Version(pytest.__version__)
-PYTEST_GE_7 = pytest_version >= Version("7.0") or (
-    pytest_version.major == 7 and pytest_version.is_prerelease
-)
+PYTEST_GE_7 = pytest_version >= Version("7.0")
 
 
 class Pathy:
