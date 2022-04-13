@@ -339,7 +339,6 @@ def test_broken_doctest_module_example(checker):
 expected_gendir = ["test_doc__directive2.py", "test_doc__project.py", "test_README.py"]
 
 
-
 def test_phmdoctest_generate(pytester, file_creator):
     """Test the --phmdoctest-generate option."""
 

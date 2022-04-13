@@ -517,8 +517,8 @@ Here are the directives equivalent to the collect section options.
   fenced code blocks in the Markdown file.
 - phmdoctest can generate test files for multiple Markdown files
   with one call by specifying a configuration file.
-- phmdoctest offers pytest pytester fixtures to generate and run
-  tests for a single Markdown file.
+- phmdoctest offers pytest pytester fixtures (suitable for plugin development)
+  to generate and run tests for a single Markdown file.
 
 ## Related projects
 

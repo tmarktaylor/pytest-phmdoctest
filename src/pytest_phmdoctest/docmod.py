@@ -61,7 +61,7 @@ def collect(
 
     There may not be any of Python code with expected output or
     Python interactive sessions in the generated test file.
-    See the docstring of phmdoctes.tool.detect_python_examples() for
+    See the docstring of phmdoctest.tool.detect_python_examples() for
      an explanation.
 
     If we have both Module and DoctestModule collectors we
@@ -120,10 +120,6 @@ def collect(
         mod = collectors.module(parent, outfile_path)
         bc = collectors.bundled_collector(parent, outfile_path, collector_name)
         bc.add_collectibles(docmod, mod)
-        # bc = collectors.bundled_collector(parent, outfile_path, collector_name)
-        # mod = collectors.module(parent, outfile_path)
-        # bc.add_docmod(docmod)
-        # bc.add_mod(mod)
         return bc
     elif docmod:
         return docmod

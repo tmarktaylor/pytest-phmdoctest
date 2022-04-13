@@ -103,15 +103,16 @@ def pytest_configure(config):
 
     # For generate mode:
     # Create directory DIR for writing generated pytest files.
-    # 1. The *.py files found in DIR are renamed to no*.sav.
+    # 1. The FILENAME.py files found in DIR are renamed to noFILENAME.sav.
     # 2. If a noFILENAME.sav already exists it is not modified.
-    # 3. Files in DIR with other extensions are not modified.
+    # 3. Markdown (*.md) files are renamed to *_md.sav.
+    # 4. Files in DIR with other extensions are not modified.
     #
     # This results in 2 important outcomes:
-    # 1. The *.py files remaining in DIR after plugin collection are
-    #    generated test_*.py files from the current pytest invocation.
+    # 1. The FILENAME.py files remaining in DIR after plugin collection are
+    #    generated test_FILENAME.py files from the current pytest invocation.
     # 2. A FILENAME.py pre-existing in DIR is only renamed and not deleted.
-    #    This allows for recovery of *.py files when DIR gets pointed
+    #    This allows for recovery of FILENAME.py files when DIR gets pointed
     #    by mistake to a directory with Python source files.
     if config.option.phmdoctest_generate is not None:
         p: Path = config.option.phmdoctest_generate
