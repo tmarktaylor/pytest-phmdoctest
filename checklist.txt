@@ -26,8 +26,8 @@ Checklist
   - upload to PYPI
     python -m pip install --upgrade pip
 	python -m pip install --upgrade setuptools wheel twine
-	python setup.py sdist bdist_wheel
-	twine   upload dist/*
+	python -m build
+	twine upload dist/*
 	# Look up on PYPI and check version
 	# install from PYPI and verify pytest-phmdoctest.__version__
 	# install in venv on Ubuntu

@@ -136,10 +136,9 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: Install dependencies
       run: |
-        echo $GITHUB_REPOSITORY $GITHUB_REF $GITHUB_WORKFLOW
         python -m pip install --upgrade pip
         pip install -r tests/requirements_inspect.txt
         python -m pip install trove-classifiers
@@ -159,7 +158,7 @@ jobs:
       run: |
         python tests/check_classifiers.py
         check-manifest -v
-        python setup.py sdist
+        python -m build
         twine check dist/*
 
   docs:
