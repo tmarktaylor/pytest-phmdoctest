@@ -1,3 +1,4 @@
+"""Tests for --phmdoctest-generate option."""
 from pathlib import Path
 
 import pytest

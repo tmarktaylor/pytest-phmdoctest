@@ -203,42 +203,12 @@ def test_generate_collect_subdir(pytester):
     )
 
 
-def test_plugin_on_command_line(pytester, file_creator):
-    """Show pytest loads the plugin when --phmdoctest is on the command line."""
-    file_creator.populate_doc(pytester_object=pytester)
-    rr = pytester.runpytest(
-        "--phmdoctest-docmod", "-v", "--ignore", "doc/directive2.md"
-    )
-    rr.assert_outcomes(passed=4)
-
-
 def test_pytest_ignore_one(pytester, file_creator):
     """Show that Markdown files can be ignored from the command line."""
     pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     file_creator.populate_all(pytester_object=pytester)
     rr = pytester.runpytest("-v", "--ignore", "doc/directive2.md")
     rr.assert_outcomes(passed=7)
-
-
-def test_pytest_ignore_twice(pytester, file_creator):
-    """Show that Markdown files can be ignored from the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
-    file_creator.populate_all(pytester_object=pytester)
-
-    rr = pytester.runpytest(
-        "-v", "--ignore", "README.md", "--ignore", "doc/directive2.md"
-    )
-    rr.assert_outcomes(passed=5)
-    rr.stdout.fnmatch_lines(
-        [
-            "*::doc__project.py::doc__project.session_00001_line_31*",
-            "*::doc__project.py::doc__project.session_00002_line_46*",
-            "*::doc__project.py::doc__project.session_00003_line_55*",
-            "*::doc__project.py::test_code_12_output_19*",
-            "*tests/test_example.py::test_example*",
-        ],
-        consecutive=True,
-    )
 
 
 def test_pytest_ignore_glob_wildcard(pytester, file_creator):
@@ -373,9 +343,9 @@ def test_setup_doctest_scope(pytester):
     There are 2 populate_doctest_namespace fixtures, one in each file.
     They are both run at pytest session setup time in the order that
     the files are collected by pytest.
-    The modification to the samespace made by the first file's tests cause
+    The modification to the namespace made by the first file's tests cause
     the second file's test case to file.
-    The order these files are collected are swapped for the second
+    The order these files are collected is swapped for the second
     runpytest call.  In both cases the second file collected fails
     the test.
     """
@@ -436,10 +406,10 @@ def test_setup_doctest_scope(pytester):
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires >=py3.8")
 def test_directive1(pytester):
-    """Specify single .md file to collect on the command line."""
+    """Run tests on directive1.md specified on the command line."""
     pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     pytester.copy_example("tests/markdown/directive1.md")
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest("-v", "directive1.md")
     assert rr.ret == pytest.ExitCode.OK
     rr.assert_outcomes(passed=3, skipped=1)
     rr.stdout.fnmatch_lines(
@@ -453,10 +423,10 @@ def test_directive1(pytester):
 
 
 def test_directive3(pytester):
-    """Specify single .md file to collect on the command line."""
+    """Run tests on directive3.md specified on the command line."""
     pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     pytester.copy_example("tests/markdown/directive3.md")
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest("-v", "directive3.md")
     assert rr.ret == pytest.ExitCode.OK
     rr.assert_outcomes(passed=9)
     rr.stdout.fnmatch_lines(

@@ -1,4 +1,4 @@
-"""Test cases for pytest plugin pytest-phmdoctest README.md docs."""
+"""Test cases for phmdoctest-collect pytest ini file settings."""
 from pathlib import Path
 
 
@@ -291,7 +291,7 @@ def test_collect_setup(pytester):
 
 
 def test_collect_setup_doctest(pytester):
-    """Collect section -s arg. Note single/double quote placement for .toml."""
+    """Collect section --doctest arg."""
 
     # Note tox.ini and pytest.ini here have the same format.
     pytester.makefile(

@@ -74,10 +74,10 @@ def test_collect_subdir(testdir):
 @pytest.mark.filterwarnings(ignore_writer)
 @pytest.mark.filterwarnings(ignore_copy_example)
 def test_directive1(testdir):
-    """Specify single .md file to collect on the command line."""
+    """Run tests on directive1.md specified on the command line."""
     testdir.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     testdir.copy_example("tests/markdown/directive1.md")
-    rr = testdir.runpytest("-v")
+    rr = testdir.runpytest("-v", "directive1.md")
     assert rr.ret == pytest.ExitCode.OK
     rr.assert_outcomes(passed=3, skipped=1)
     rr.stdout.fnmatch_lines(
@@ -161,7 +161,7 @@ def test_collect_setup(testdir):
 @pytest.mark.filterwarnings(ignore_writer)
 @pytest.mark.filterwarnings(ignore_copy_example)
 def test_collect_setup_doctest(testdir):
-    """Collect section -s arg. Note single/double quote placement for .toml."""
+    """Collect section --doctest arg."""
 
     # Note tox.ini and pytest.ini here have the same format.
     testdir.makefile(
