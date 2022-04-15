@@ -2,24 +2,18 @@
 include *.md
 
 # Include the license, checklist, requirements
+include *.py
 include *.txt
-
 include CONTRIBUTING.md
-include conf.py
 include index.rst
-
-recursive-include doc *.md
-recursive-include doc *.py
-recursive-include doc *.txt
-recursive-include tests *.ini
-recursive-include tests *.md
-recursive-include tests *.py
-recursive-include tests *.txt
-
 include .gitignore
 include *.yml
 include *.toml
 include *.ini
 
-# Don't want Sphinx build artifacts
-recursive-exclude doc/_build *
+recursive-include doc *.md
+recursive-include doc *.txt
+recursive-include tests *.ini
+recursive-include tests *.md
+recursive-include tests *.py
+recursive-include tests *.txt

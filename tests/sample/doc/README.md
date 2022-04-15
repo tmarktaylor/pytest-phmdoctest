@@ -1,11 +1,22 @@
 # doc/README.md
 
-A testfile should not be generated from this file.
+A testfile should not be generated from this file
+since there are no Python fenced code blocks.
 
-```python
-assert False, "Should not create a testfile from this file."
+Here are some other fenced code blocks.
+
+```ini
+# pytest.ini and tox.ini
+[pytest]
+addopts = --phmdoctest
 ```
-
-```py
->>> assert False, "Should not create a testfile from this file."
+```ini
+# setup.cfg
+[tool:pytest]
+addopts = --phmdoctest
+```
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+addopts = "--phmdoctest"
 ```

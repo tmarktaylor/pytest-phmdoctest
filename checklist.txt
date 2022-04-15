@@ -9,6 +9,7 @@ Checklist
 - Run pytest cases with python warnings enabled.
   - python -W once -m pytest -vv tests
   - python -W default -m pytest -vv tests
+- Run coverage on test suite.
 - Run check-manifest Verify sdist archive contains at least all the files under version control.
 - git ls-files
 - Run mypy against package sources
@@ -18,15 +19,15 @@ Checklist
 - Build the Sphinx html documents and check/update doc/requirements.txt)
 - Release on GitHub
   - tag= v0.0.0
-  - release= pytest-phmdoctest 0.0.0 (description just below tag)
+  - release= pytest-phmdoctest 0.0.0 (description just below tag, press the +)
   - description= Version 0.0.0 uploaded to Python Package Index.
 - upload to PYPI
   - Download zip from github to scratch directory
   - upload to PYPI
     python -m pip install --upgrade pip
 	python -m pip install --upgrade setuptools wheel twine
-	python setup.py sdist bdist_wheel
-	twine   upload dist/*
+	python -m build
+	twine upload dist/*
 	# Look up on PYPI and check version
 	# install from PYPI and verify pytest-phmdoctest.__version__
 	# install in venv on Ubuntu

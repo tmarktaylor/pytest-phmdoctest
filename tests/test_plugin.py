@@ -4,10 +4,11 @@ from pathlib import Path
 import sys
 
 import pytest_phmdoctest
+import pytest_phmdoctest.collectors
 import pytest
 
 
-# Note- requires conftest.py with    pytest_plugins = ["pytester"]
+# Note- requires conftest.py at root with    pytest_plugins = ["pytester"]
 # Note- Requires pytest >= 6.2
 
 
@@ -31,7 +32,7 @@ class TestSameVersions:
 
     def test_readme_md(self):
         """Check the version near the top of README.md."""
-        self.verify_found_in_file("README.md", "# pytest-phmdoctest {}")
+        self.verify_found_in_file("README.md", "# pytest-phmdoctest {}\n")
 
     def test_index_rst(self):
         """Check the version is anywhere in index.rst."""
@@ -52,96 +53,167 @@ class TestSameVersions:
         metadata_version = config["metadata"]["version"]
         assert metadata_version == self.package_version
 
+    def test_sample_pytest_ini(self):
+        """Check the version is anywhere in tests/sample/pytest.ini.
+
+        Developers: Please manually verify the numbers of items collected
+        by the commands shown in tests/sample/pytest.ini.
+        """
+        self.verify_found_in_file(
+            "tests/sample/pytest.ini", "pytest-phmdoctest version {} is installed."
+        )
+
 
 def test_help(pytester):
     """Look for group, addoptions, addini."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
     rr = pytester.runpytest("--help")
     assert rr.ret == pytest.ExitCode.OK
     rr.stdout.fnmatch_lines(
         [
             "*phmdoctest:*",
-            "  --phmdoctest*",
-            "  --phmdoctest-save=dir*",
+            "  --phmdoctest-docmod*",
+            "  --phmdoctest-generate=DIR*",
             "*phmdoctest-collect (linelist):*",
         ],
     )
 
 
-def test_collect_root(pytester):
-    """A single file at pytest root is collected and tested."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+def test_bad_usage(pytester):
+    """Try illegal combinations of command line options."""
+    expected_usage_lines = [
+        "*usage error*phmdoctest, --phmdoctest-generate, --phmdoctest-docmod*",
+    ]
+
+    rr = pytester.runpytest("--phmdoctest", "--phmdoctest-docmod")
+    assert rr.ret == pytest.ExitCode.USAGE_ERROR
+    rr.stderr.fnmatch_lines(expected_usage_lines)
+
+    rr = pytester.runpytest("--phmdoctest-docmod", "--phmdoctest-generate", ".gendir")
+    assert rr.ret == pytest.ExitCode.USAGE_ERROR
+    print(rr.stderr)
+    rr.stderr.fnmatch_lines(expected_usage_lines)
+
+    rr = pytester.runpytest("--phmdoctest-generate", ".gendir", "--phmdoctest")
+    assert rr.ret == pytest.ExitCode.USAGE_ERROR
+    rr.stderr.fnmatch_lines(expected_usage_lines)
+
+    rr = pytester.runpytest(
+        "--phmdoctest", "--phmdoctest-generate", ".gendir" "--phmdoctest-docmod"
+    )
+    assert rr.ret == pytest.ExitCode.USAGE_ERROR
+    rr.stderr.fnmatch_lines(expected_usage_lines)
+
+
+def test_testfile_checker(pytester, testfile_checker):
+    """Show testfile_checker fixture can find an error."""
+    filename = "requirements.txt"
+    pytester.copy_example(filename)
+    contents = Path(filename).read_text(encoding="utf-8")
+    modified_contents = contents.replace("phmdoctest", "bogus-phmdoctest")
+    with pytest.raises(AssertionError):
+        testfile_checker(filename, modified_contents)
+
+
+def test_generate_collect_root(pytester):
+    """1. A single file at pytest root is collected and tested... .
+
+    2. Show the generate dir is flushed of pre-existing *.py and prior test_*.py
+    files.
+    3. Show that a pre-existing *.py file is preserved for later recovery.
+    """
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-generate .gendir\n")
     pytester.copy_example("tests/sample/README.md")
-    rr = pytester.runpytest("-v")
-    assert rr.ret == pytest.ExitCode.OK
-    rr.assert_outcomes(passed=2)
-    rr.stdout.fnmatch_lines(
+    rr1 = pytester.runpytest("-v", "README.md", ".gendir")
+    assert rr1.ret == pytest.ExitCode.OK
+    rr1.assert_outcomes(passed=1)
+    rr1.stdout.fnmatch_lines(
         [
-            "*::README.py::README.session_00001_line_24*",
-            "*::README.py::test_code_10_output_17*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
         ],
         consecutive=True,
     )
+    assert Path(".gendir/test_README.py").exists()
+
+    # Show that generated test file from the prior run is overwritten.
+    # Do this by replacing the generated test file contents
+    # with a single assert statement that will
+    # fail as soon as it is imported by pytest.
+    assert 13 == Path(".gendir/test_README.py").write_text(
+        "assert False\n", encoding="utf-8"
+    )
+
+    # Create a pre-existing *.py file in .gendir to show:
+    # 1. It is not tested.
+    # 2. It is preserved.
+    Path(".gendir/test_fails.py").write_text("assert False\n", encoding="utf-8")
+
+    rr2 = pytester.runpytest("-v", "README.md", ".gendir", "--doctest-modules")
+    assert rr2.ret == pytest.ExitCode.OK
+    rr2.assert_outcomes(passed=2)
+    rr2.stdout.fnmatch_lines(
+        [
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
+        ],
+        consecutive=True,
+    )
+    assert Path(".gendir/test_README.py").exists()
+    assert Path(".gendir/notest_README.sav").exists()
+    assert Path(".gendir/notest_fails.sav").exists()
+
+    # Show that that running again does not disturb the preserved file
+    # notest_fails.sav.
+    rr3 = pytester.runpytest("-v", "README.md", ".gendir", "--doctest-modules")
+    assert rr3.ret == pytest.ExitCode.OK
+    rr3.assert_outcomes(passed=2)
+    rr3.stdout.fnmatch_lines(
+        [
+            "*.gendir/test_README.py::test_README.session_00001_line_24*",
+            "*.gendir/test_README.py::test_code_10_output_17*",
+        ],
+        consecutive=True,
+    )
+    assert Path(".gendir/test_README.py").exists()
+    assert Path(".gendir/notest_README.sav").exists()
+    assert Path(".gendir/notest_fails.sav").exists()
+    assert (
+        Path(".gendir/notest_fails.sav").read_text(encoding="utf-8") == "assert False\n"
+    )
 
 
-def test_collect_subdir(pytester):
+def test_generate_collect_subdir(pytester):
     """A single file at pytest root/doc is collected and tested."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+
+    # Note that since we have the argument .gendir on the command line
+    # to collect the generated files, we need to explicitly another
+    # argument before gen dir to collect the Markdown files.
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-generate=.gendir\n")
     pytester.copy_example("tests/sample/doc/directive2.md")
     pytester.mkdir("doc")
     Path("directive2.md").rename("doc/directive2.md")
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest("-v", "doc", ".gendir")
     rr.assert_outcomes(passed=3)
     rr.stdout.fnmatch_lines(
         [
-            "*::doc__directive2.py::test_code_25_output_32*",
-            "*::doc__directive2.py::test_code_42_output_47*",
-            "*::doc__directive2.py::test_code_52_output_56*",
+            "*.gendir/test_doc__directive2.py::test_code_25_output_32*",
+            "*.gendir/test_doc__directive2.py::test_code_42_output_47*",
+            "*.gendir/test_doc__directive2.py::test_code_52_output_56*",
         ],
         consecutive=True,
     )
-
-
-def test_plugin_on_command_line(pytester, file_creator):
-    """Show pytest loads the plugin when --phmdoctest is on the command line."""
-    file_creator.populate_doc(pytester_object=pytester)
-    rr = pytester.runpytest("--phmdoctest", "-v", "--ignore", "doc/directive2.md")
-    rr.assert_outcomes(passed=5)
 
 
 def test_pytest_ignore_one(pytester, file_creator):
     """Show that Markdown files can be ignored from the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     file_creator.populate_all(pytester_object=pytester)
     rr = pytester.runpytest("-v", "--ignore", "doc/directive2.md")
-    rr.assert_outcomes(passed=8)
-
-
-def test_pytest_ignore_twice(pytester, file_creator):
-    """Show that Markdown files can be ignored from the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
-    file_creator.populate_all(pytester_object=pytester)
-
-    rr = pytester.runpytest(
-        "-v", "--ignore", "README.md", "--ignore", "doc/directive2.md"
-    )
-    rr.assert_outcomes(passed=6)
-    rr.stdout.fnmatch_lines(
-        [
-            "*::doc__nocode.py::test_nothing_passes*",
-            "*::doc__project.py::doc__project.session_00001_line_31*",
-            "*::doc__project.py::doc__project.session_00002_line_46*",
-            "*::doc__project.py::doc__project.session_00003_line_55*",
-            "*::doc__project.py::test_code_12_output_19*",
-            "*tests/test_example.py::test_example*",
-        ],
-        consecutive=True,
-    )
+    rr.assert_outcomes(passed=7)
 
 
 def test_pytest_ignore_glob_wildcard(pytester, file_creator):
     """Show that Markdown files can be ignored from the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     file_creator.populate_all(pytester_object=pytester)
 
     rr = pytester.runpytest("-v", "--ignore-glob", "*/*.md")
@@ -156,9 +228,17 @@ def test_pytest_ignore_glob_wildcard(pytester, file_creator):
     )
 
 
+def test_collect_no_python_blocks(pytester, file_creator):
+    """Specify single .md file that has no Python blocks on the command line."""
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-generate .gendir\n")
+    file_creator.populate_all(pytester_object=pytester)
+    rr = pytester.runpytest("-v", "CONTRIBUTING.md")
+    assert rr.ret == pytest.ExitCode.NO_TESTS_COLLECTED
+
+
 def test_collect_specific(pytester, file_creator):
     """Specify single .md file to collect on the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     file_creator.populate_all(pytester_object=pytester)
     rr = pytester.runpytest("README.md", "-v")
     assert rr.ret == pytest.ExitCode.OK
@@ -175,27 +255,29 @@ def test_collect_specific(pytester, file_creator):
 def test_collect_specific_no_ini(pytester, file_creator):
     """Specify --phmdoctest and single .md file to collect on the command line."""
     file_creator.populate_all(pytester_object=pytester)
-    rr = pytester.runpytest("doc/nocode.md", "--phmdoctest", "-v")
+    rr = pytester.runpytest("doc/project.md", "--phmdoctest-docmod", "-v")
     assert rr.ret == pytest.ExitCode.OK
-    rr.assert_outcomes(passed=1)
+    rr.assert_outcomes(passed=4)
     rr.stdout.fnmatch_lines(
         [
-            "*::doc__nocode.py::test_nothing_passes*",
+            "*::doc__project.py::doc__project.session_00001_line_31 PASSED*",
+            "*::doc__project.py::doc__project.session_00002_line_46 PASSED*",
+            "*::doc__project.py::doc__project.session_00003_line_55 PASSED*",
+            "*::doc__project.py::test_code_12_output_19 PASSED*",
         ],
         consecutive=True,
     )
 
 
 def test_failing_doctest_item(pytester, file_creator):
-    """Show how a failing doctest is displayed."""
+    """Show a generated failing doctest."""
 
     file_creator.populate_all(pytester_object=pytester)
     contents = Path("README.md").read_text(encoding="utf-8")
     injected = contents.replace("<BLANKLINE>", "<BOGUS>")
-    with open("README.md", "w", encoding="utf-8") as f:
-        f.write(injected)
-    rr = pytester.runpytest("--phmdoctest", "-v")
-    rr.assert_outcomes(failed=1, passed=10)
+    _ = Path("README.md").write_text(injected, encoding="utf-8")
+    rr = pytester.runpytest("--phmdoctest-docmod", "-v")
+    rr.assert_outcomes(failed=1, passed=9)
     rr.stdout.fnmatch_lines(
         [
             "*::README.py::README.session_00001_line_24 FAILED*",
@@ -203,7 +285,6 @@ def test_failing_doctest_item(pytester, file_creator):
             "*::doc__directive2.py::test_code_25_output_32 PASSED*",
             "*::doc__directive2.py::test_code_42_output_47 PASSED*",
             "*::doc__directive2.py::test_code_52_output_56 PASSED*",
-            "*::doc__nocode.py::test_nothing_passes PASSED*",
             "*::doc__project.py::doc__project.session_00001_line_31 PASSED*",
             "*::doc__project.py::doc__project.session_00002_line_46 PASSED*",
             "*::doc__project.py::doc__project.session_00003_line_55 PASSED*",
@@ -220,58 +301,30 @@ def test_failing_doctest_item(pytester, file_creator):
         consecutive=True,
     )
 
-    rr.stdout.fnmatch_lines(
-        [
-            "*>>> print('Hello*",
-            "*Differences (unified diff with -expected +actual):*",
-            "*@@ -1,3 +1,3 @@",
-            "*Hello",
-            "*-<BOGUS>",
-            "*+<BLANKLINE>",
-            "*World!*",
-        ],
-        consecutive=True,
-    )
-
 
 def test_failing_python_item(pytester, file_creator):
-    """Show how a failing Python snippet is displayed."""
+    """Show a generated failing Python code example."""
 
     file_creator.populate_all(pytester_object=pytester)
-    contents = Path("tests/test_example.py").read_text(encoding="utf-8")
-    injected = contents.replace("coffee = 3", "coffee = 5")
-    with open("tests/test_example.py", "w", encoding="utf-8") as f:
-        f.write(injected)
-    rr = pytester.runpytest("--phmdoctest", "-v")
-    rr.assert_outcomes(failed=1, passed=10)
+    contents = Path("doc/directive2.md").read_text(encoding="utf-8")
+    injected = contents.replace("== [1, 2, 3, 4]", "== [1, 2, 3, 4, 9999]")
+    _ = Path("doc/directive2.md").write_text(injected, encoding="utf-8")
+    rr = pytester.runpytest("--phmdoctest-docmod", "-v")
+    rr.assert_outcomes(failed=1, passed=9)
     rr.stdout.fnmatch_lines(
         [
             "*::README.py::README.session_00001_line_24 PASSED*",
             "*::README.py::test_code_10_output_17 PASSED*",
             "*::doc__directive2.py::test_code_25_output_32 PASSED*",
             "*::doc__directive2.py::test_code_42_output_47 PASSED*",
-            "*::doc__directive2.py::test_code_52_output_56 PASSED*",
-            "*::doc__nocode.py::test_nothing_passes PASSED*",
+            "*::doc__directive2.py::test_code_52_output_56 FAILED*",
             "*::doc__project.py::doc__project.session_00001_line_31 PASSED*",
             "*::doc__project.py::doc__project.session_00002_line_46 PASSED*",
             "*::doc__project.py::doc__project.session_00003_line_55 PASSED*",
             "*::doc__project.py::test_code_12_output_19 PASSED*",
-            "*tests/test_example.py::test_example FAILED*",
+            "*tests/test_example.py::test_example PASSED*",
         ],
         consecutive=True,
-    )
-    # Selected lines from the expected stdout showing the trace and
-    # captured stdout from ndiff showing what failed compare_exact.
-    rr.stdout.fnmatch_lines(
-        [
-            "*def test_example():*",
-            "*coffee = 5*",
-            "*coding = 4*",
-            "*assert enjoyment == coffee + coding*",
-            "*assert 7 == 9*",
-            "*+7",
-            "*-9*",
-        ],
     )
 
 
@@ -290,9 +343,9 @@ def test_setup_doctest_scope(pytester):
     There are 2 populate_doctest_namespace fixtures, one in each file.
     They are both run at pytest session setup time in the order that
     the files are collected by pytest.
-    The modification to the samespace made by the first file's tests cause
+    The modification to the namespace made by the first file's tests cause
     the second file's test case to file.
-    The order these files are collected are swapped for the second
+    The order these files are collected is swapped for the second
     runpytest call.  In both cases the second file collected fails
     the test.
     """
@@ -353,10 +406,10 @@ def test_setup_doctest_scope(pytester):
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires >=py3.8")
 def test_directive1(pytester):
-    """Specify single .md file to collect on the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+    """Run tests on directive1.md specified on the command line."""
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     pytester.copy_example("tests/markdown/directive1.md")
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest("-v", "directive1.md")
     assert rr.ret == pytest.ExitCode.OK
     rr.assert_outcomes(passed=3, skipped=1)
     rr.stdout.fnmatch_lines(
@@ -370,10 +423,10 @@ def test_directive1(pytester):
 
 
 def test_directive3(pytester):
-    """Specify single .md file to collect on the command line."""
-    pytester.makeini("[pytest]\naddopts = --phmdoctest\n")
+    """Run tests on directive3.md specified on the command line."""
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
     pytester.copy_example("tests/markdown/directive3.md")
-    rr = pytester.runpytest("-v")
+    rr = pytester.runpytest("-v", "directive3.md")
     assert rr.ret == pytest.ExitCode.OK
     rr.assert_outcomes(passed=9)
     rr.stdout.fnmatch_lines(
@@ -387,6 +440,75 @@ def test_directive3(pytester):
             "*::directive3.py::test_code_85_output_93*",
             "*::directive3.py::test_code_108_output_114*",
             "*::directive3.py::test_code_121*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_one_python_block(pytester):
+    """Collect a .md file that has just one Python code block.
+
+    Show phmdoctest.tool.detect_python_examples() can detect a python block.
+    """
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
+    pytester.copy_example("tests/markdown/one_python_block.md")
+    rr = pytester.runpytest("-v")
+    assert rr.ret == pytest.ExitCode.OK
+    rr.assert_outcomes(passed=1)
+    rr.stdout.fnmatch_lines(
+        [
+            "*::one_python_block.py::test_code_7_output_14*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_one_session_block(pytester):
+    """Collect a .md file that has just one interactive session block.
+
+    Show phmdoctest.tool.detect_python_examples() can detect a session block.
+    """
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
+    pytester.copy_example("tests/markdown/one_session_block.md")
+    rr = pytester.runpytest("-v")
+    assert rr.ret == pytest.ExitCode.OK
+    rr.assert_outcomes(passed=1)
+    rr.stdout.fnmatch_lines(
+        [
+            "*::one_session_block.py::one_session_block.session_00001_line_8*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_file_has_no_examples(pytester):
+    """Collect a .md file that has no code or interactive session blocks."""
+    pytester.makeini("[pytest]\naddopts = --phmdoctest-docmod\n")
+    pytester.copy_example("CONTRIBUTING.md")
+    rr = pytester.runpytest("-v")
+    assert rr.ret == pytest.ExitCode.NO_TESTS_COLLECTED
+    rr.assert_outcomes()
+    rr.stdout.fnmatch_lines(
+        [
+            "*collected 0 items*",
+        ],
+        consecutive=True,
+    )
+
+
+def test_collect_nodeid(pytester, file_creator):
+    """Collect a generated test file by nodeid."""
+
+    file_creator.populate_all(pytester_object=pytester)
+    rr = pytester.runpytest("--phmdoctest-docmod", "-v", "-k", "README.py")
+    if pytest_phmdoctest.collectors.PYTEST_GE_7:
+        rr.assert_outcomes(passed=2, deselected=8)
+    else:
+        rr.assert_outcomes(passed=2)
+    rr.stdout.fnmatch_lines(
+        [
+            "*::README.py::README.session_00001_line_24 PASSED*",
+            "*::README.py::test_code_10_output_17 PASSED*",
         ],
         consecutive=True,
     )

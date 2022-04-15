@@ -1,7 +1,7 @@
 name: CI
 
 # Notes:
-# - The venv_tests job installs pytest-phmdoctest in a virtual environment.
+# - The os job installs pytest-phmdoctest in a virtual environment.
 # - The coverage job installs pytest-phmdoctest in develop mode.
 # - The inspect job does not install pytest-phmdoctest.
 on:
@@ -10,7 +10,30 @@ on:
     branches: [develop]
 
 jobs:
-  venv_tests:
+  versions:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          python-version: ["pypy-3.7", "3.7", "3.8", "3.9", "3.10"]
+      steps:
+        - uses: actions/checkout@v2
+        - name: Setup Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: ${{ matrix.python-version }}
+        - name: Install
+          run: |
+            echo $GITHUB_REPOSITORY $GITHUB_REF $GITHUB_WORKFLOW
+            python -m pip install --upgrade pip
+            pip install --no-deps "."
+            pip install -r requirements.txt
+            pip install -r tests/requirements.txt
+            pip freeze
+        - name: Test suite
+          run: |
+            pytest -v tests
+
+  os:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -56,17 +79,25 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install coverage
+        # We code specific to pytest version 6.2,<7 and 7.0+.
+        # We run tests under both versions to get coverage.
+        # Install newest pytest 6.x.x before -r requirements.txt below
+        # so that pytest >= 7 is not installed.
+        pip install "pytest<7"
         python -m pip install --no-deps --editable "."
         pip install -r requirements.txt
         pip install -r tests/requirements.txt
         pip freeze
-    - name: Tests, coverage report
+    - name: Tests
       run: |
         coverage run --branch --source=src -m pytest -v tests
+    - name: Tests, coverage report pytest >= 7
+      run: |
+        python -m pip install --upgrade pytest
+        pytest --version
+        coverage run --append --branch --source=src -m pytest -v tests
         coverage report --show-missing
         coverage xml
-      env:
-        PYTHONPATH: ${{ github.workspace }}/src
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       if: success() && ((github.ref == 'refs/heads/main') || (github.ref == 'refs/heads/develop'))
@@ -77,6 +108,27 @@ jobs:
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
 
+  DoctestModuleApi:
+    # Show pytest's DoctestModule API works on pytest 5.
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install "pytest<6"
+        python -m pip install --no-deps "."
+        pip install -r requirements.txt
+        pip freeze
+    - name: Tests
+      run: |
+        pytest -v tests/old_pytests.py
+      continue-on-error: true
+
   inspect:
     runs-on: ubuntu-latest
     steps:
@@ -84,13 +136,14 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r tests/requirements_inspect.txt
+        python -m pip install trove-classifiers
         pip freeze
-    - name: Formating
+    - name: Formatting
       # Show reformatting changes.
       # Make the changes.
       # Subsequent steps run with the modified files.
@@ -103,8 +156,9 @@ jobs:
         flake8 --exit-zero --max-complexity=10
     - name: Deployable
       run: |
+        python tests/check_classifiers.py
         check-manifest -v
-        python3 setup.py sdist
+        python -m build
         twine check dist/*
 
   docs:

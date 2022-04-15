@@ -1,10 +1,8 @@
 """Test cases for make_collect_parser() and parse_collect_line()."""
 import re
 
-import pytest
-
-from pytest_phmdoctest.plugin import make_collect_parser
-from pytest_phmdoctest.plugin import parse_collect_line
+from pytest_phmdoctest.settings import make_collect_parser
+from pytest_phmdoctest.settings import parse_collect_line
 
 parser = make_collect_parser()
 
@@ -146,7 +144,7 @@ def test_bad_argument():
     expected_lines1 = [
         "pytest-phmdoctest parse error on the following line:",
         "myglob --bogus --skip Floats --setup MyTEXT --setup-doctest",
-        "usage: CollectSection [-h] [--skip TEXT] [--fail-nocode] [--setup TEXT]",
+        "usage: FileSettings [-h] [--skip TEXT] [--fail-nocode] [--setup TEXT]",
         "                      [--teardown TEXT] [--setup-doctest]",
         "                      file_glob",
     ]
@@ -154,12 +152,9 @@ def test_bad_argument():
         "Process a line of ini file phmdoctest-collect section.",
     ]
     expected_lines3 = [
-        # "positional arguments:",
         "  file_glob             Generate test file for matching markdown file.",
     ]
     expected_lines4 = [
-        # "optional arguments:",
-        # "  -h, --help            show this help message and exit",
         "  --skip TEXT, -s TEXT",
         "  --fail-nocode",
         "  --setup TEXT, -u TEXT",
@@ -181,19 +176,12 @@ def test_bad_argument():
 
 
 def show_args(line: str) -> None:
-    """Show the dict created by parsing a collect section line.
-
-    If the parsing fails, catch and print the exception message instead.
-    """
-    parser = make_collect_parser()
-    try:
-        args = parse_collect_line(parser, line)
+    """Show the dict created by parsing a collect section line."""
+    args = parse_collect_line(parser, line)
+    if "ini-error" not in args:
         glob = args.pop("file_glob")
         print("glob=", glob)
         print("args=", args)
-    except ValueError as exc_info:
-        print("Caught ValueError from parse_collect_lines...")
-        print(exc_info)
 
 
 def _main():
