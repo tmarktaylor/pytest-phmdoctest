@@ -1,6 +1,6 @@
 # Recent changes
 
-1.0.0 - 2022-04-XX
+1.0.0 - 2022-04-15
 
 - `--phmdoctest` option only does Python code/expected output.
 - Add `--phmdoctest-docmod` option to do both:

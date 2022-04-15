@@ -148,7 +148,7 @@ tests/test_example.py::test_example PASSED
   test file.
 - A Markdown file that does not have any Python fenced code block examples
   is not tested.
-- To avoid collecting .md files use pytest --ignore and --ignore-glob
+- To avoid collecting .md files use pytest `--ignore` and `--ignore-glob`
   on the command line or in the addopts part of the pytest ini file.
   These commands work on .md files and use Unix shell-style wildcards.
 
@@ -267,7 +267,7 @@ tests/test_example.py::test_example PASSED
 ```
 
 - Note that only test_example.py was collected.
-- With `phmdoctest-generate` the test files
+- With `--phmdoctest-generate` the test files
   generated from Markdown do not get collected.
 - Run pytest again on the generated test files.
 - The generated test files become stale with time.
@@ -288,7 +288,7 @@ tests/test_example.py::test_example PASSED
 - .gendir is cleaned of all *.md files as well.
   Pre-existing FILENAME.md files in the output directory get renamed
   to FILENAME_md.sav.
-- If .gendir was empty, it will now have these `*.py` files:
+- If .gendir was empty, it will now have these *.py files:
 
 <!--phmdoctest-label gendir-files-->
 ```
@@ -334,8 +334,8 @@ How it works:
   there for test files while searching `"."`.
   See norecursedirs default values in Pytest Documentation |
   API reference | Configuration Options | norecursedirs.
-- The --doctest-modules option tells pytest to look for doctests in
-  docstrings of `*.py` files.
+- The `--doctest-modules` option tells pytest to look for doctests in
+  docstrings of *.py files.
 - When doing `--doctest-modules`, the `--ignore src` option tells
   pytest not to collect modules from the src folder. We only
   want to collect doctests from .gendir.
@@ -373,12 +373,12 @@ pytest -v --phmdoctest-generate=.gendir "." .gendir  --ignore-glob */*.md --doct
 
 ## Help
 
-pytest --help contains a **phmdoctest:** group in the middle and
+pytest `--help` contains a **phmdoctest:** group in the middle and
 an ini-option near the bottom.  The help contains:
-- --phmdoctest
-- --phmdoctest-generate
-- --phmdoctest-docmod
-- phmdoctest-collect
+- `--phmdoctest`
+- `--phmdoctest-generate`
+- `--phmdoctest-docmod`
+- `phmdoctest-collect`
 
 ## Configure collection
 
@@ -439,8 +439,8 @@ collected 7 items
 ::doc__project.py::doc__project.session_00002_line_46 PASSED
 ```
 
-- The example passes the options --skip greeting --skip enjoyment
-  when testing doc/project.md. The --skip greeting --skip enjoyment
+- The example passes the options `--skip greeting` and `--skip enjoyment`
+  when testing doc/project.md. The `--skip greeting` and `--skip enjoyment`
   options cause 2 examples to be skipped. These are the first and
   last examples in the file.
 - The example tests the two Python interactive sessions in the midlle
@@ -449,39 +449,39 @@ collected 7 items
   There are no otions.
 - The ini file globs above only apply to .md files.
   We ignore the Python pytest test file tests/test_example.py
-  by adding the --ignore option.
+  by adding the `--ignore` option.
 - Look for more phmdoctest-collect examples on GitHub in
   tests/test_collect_section.py.
 
 
 ### phmdoctest-collect options
 
-#### *-s, --skip TEXT*
+#### `-s, --skip TEXT`
 Do not test blocks with substring TEXT. Allowed multiple times.
 
-#### *--fail-nocode*
+#### `--fail-nocode`
 Markdown file with no code blocks left after applying skips
 generates a failing test.
 
-#### *-u, --setup TEXT*
+#### `-u, --setup TEXT`
 Run block with substring TEXT at test module setup time.
 
-#### *-d, --teardown TEXT*
+#### `-d, --teardown TEXT`
 Run block with substring TEXT at test module teardown time.
 
-#### *--setup-doctest*
-Make globals created by the --setup Python code block
+#### `--setup-doctest`
+Make globals created by the `--setup` Python code block
 or setup directive visible to Python interactive session >>> blocks.
 **Caution:** The globals are set at pytest Session scope.
 The globals are visible to all doctests in the test suite.
 This includes doctests collected by the plugin
-and doctests collected from other files due to --doctest-modules.
+and doctests collected from other files due to `--doctest-modules`.
 
 ### Notes
 
 - Fenced code blocks are searched for the substring TEXT.
-- --skip TEXT can apply to more than one block.
-- Exactly one block can match --setup and --teardown.
+- `--skip TEXT` can apply to more than one block.
+- Exactly one block can match `--setup` and `--teardown`.
 
 ### Equivalent directives
 
